@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Notifications</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone notifications — ReUI-style. Scoped under .nt so nothing outside this page is affected. */
+            .nt {
+                --nt-fg: #0a0a0a;
+                --nt-muted: #737373;
+                --nt-border: #e5e5e5;
+                --nt-border-strong: #d4d4d4;
+                --nt-soft: #fafafa;
+                --nt-hover: #f5f5f5;
+                --nt-ink: #171717;
+                --nt-radius: 8px;
+                --nt-radius-lg: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--nt-fg);
+            }
+            .nt h1, .nt h2, .nt h3 { font-family: inherit; font-weight: 600; letter-spacing: -.02em; color: var(--nt-fg); }
+            .nt p { color: var(--nt-muted); }
+            .nt :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--nt-ink); }
+            .nt .section { padding-block: 40px 64px; }
+            .nt .container--narrow { max-width: 760px; }
+
+            /* Heading */
+            .nt .page-head--row {
+                display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+                margin-bottom: 24px;
+            }
+            .nt .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); }
+            .nt .page-head p { margin: 0; font-size: 14px; }
+            .nt .page-head form { margin: 0; }
+
+            /* Buttons */
+            .nt .btn {
+                min-height: 36px; padding: 0 14px; font-size: 14px; font-weight: 500;
+                border-width: 1px; border-radius: var(--nt-radius); box-shadow: none;
+            }
+            .nt .btn--sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+            .nt .btn--primary { background: var(--nt-ink); border-color: var(--nt-ink); color: #fff; }
+            .nt .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+            .nt .btn--outline { background: #fff; border-color: var(--nt-border); color: var(--nt-fg); }
+            .nt .btn--outline:hover { background: var(--nt-hover); border-color: var(--nt-border-strong); box-shadow: none; }
+
+            /* List */
+            .nt .manage-list { display: flex; flex-direction: column; gap: 8px; }
+            .nt .card.manage-item {
+                display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px;
+                background: #fff; border: 1px solid var(--nt-border); border-radius: var(--nt-radius-lg);
+                box-shadow: none; transform: none;
+            }
+            .nt .card.manage-item.is-unread {
+                background: var(--nt-soft); border-color: var(--nt-border-strong);
+                box-shadow: inset 3px 0 0 var(--nt-ink);
+            }
+            .nt .manage-item__main { flex: 1; min-width: 0; }
+            .nt .manage-item__title {
+                display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;
+                font-size: 14px; font-weight: 600; letter-spacing: -.01em; color: var(--nt-fg);
+            }
+            .nt .manage-item__meta { margin: 4px 0 0; font-size: 13px; line-height: 1.55; color: var(--nt-muted); }
+            .nt .notification-item__age { display: block; margin-top: 6px; font-size: 12px; color: #a3a3a3; }
+            .nt .manage-item__actions { flex-shrink: 0; align-self: center; }
+            .nt .manage-item__actions form { margin: 0; }
+
+            /* Icon tile: neutral by default, tinted for the usual tone names */
+            .nt .notification-item__icon {
+                display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; font-size: 16px;
+                background: var(--nt-hover); color: var(--nt-ink);
+                border: 1px solid var(--nt-border); border-radius: var(--nt-radius);
+            }
+            .nt .notification-item__icon--success, .nt .notification-item__icon--green
+            { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+            .nt .notification-item__icon--warning, .nt .notification-item__icon--amber, .nt .notification-item__icon--orange
+            { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+            .nt .notification-item__icon--danger, .nt .notification-item__icon--error, .nt .notification-item__icon--red
+            { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+            .nt .notification-item__icon--info, .nt .notification-item__icon--blue, .nt .notification-item__icon--primary
+            { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+
+            /* "New" badge */
+            .nt .badge {
+                display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
+                font-size: 11px; font-weight: 500; color: #404040;
+                background: var(--nt-hover); border: 1px solid var(--nt-border); border-radius: 999px;
+            }
+            .nt .badge--blue { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+
+            /* Empty state */
+            .nt .empty-state {
+                padding: 56px 16px; text-align: center; background: transparent;
+                border: 1px dashed var(--nt-border-strong); border-radius: var(--nt-radius-lg);
+            }
+            .nt .empty-state > i { font-size: 24px; color: var(--nt-muted); }
+            .nt .empty-state h3 { margin: 10px 0 4px; font-size: 16px; }
+            .nt .empty-state p { margin: 0 0 16px; font-size: 14px; }
+
+            @media (max-width: 560px) {
+                .nt .section { padding-block: 28px 48px; }
+                .nt .card.manage-item { flex-wrap: wrap; }
+                .nt .manage-item__main { flex-basis: calc(100% - 52px); }
+                .nt .manage-item__actions { margin-left: 50px; }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="nt">
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head page-head--row">
+                <div>
+                    <h1>Notifications</h1>
+                    <p>Everything that happened to your bookings, services and reviews.</p>
+                </div>
+                <form th:action="@{/notifications/read-all}" method="post"
+                      th:if="${notifications.totalElements > 0}">
+                    <button class="btn btn--outline btn--sm" type="submit">
+                        <i class="bi bi-check2-all" aria-hidden="true"></i> Mark all as read
+                    </button>
+                </form>
+            </div>
+
+            <div class="manage-list" th:if="${notifications.totalElements > 0}">
+                <div class="card manage-item notification-item"
+                     th:each="n : ${notifications}"
+                     th:classappend="${n.read} ? '' : 'is-unread'">
+
+                    <span class="notification-item__icon"
+                          th:classappend="'notification-item__icon--' + ${n.tone}" aria-hidden="true">
+                        <i class="bi" th:classappend="${n.icon}"></i>
+                    </span>
+
+                    <div class="manage-item__main">
+                        <h2 class="manage-item__title">
+                            <span th:text="${n.title}">Title</span>
+                            <span class="badge badge--blue" th:unless="${n.read}">New</span>
+                        </h2>
+                        <p class="manage-item__meta" th:text="${n.message}">Message</p>
+                        <small class="notification-item__age" th:text="${n.ageLabel}">2 hours ago</small>
+                    </div>
+
+                    <div class="manage-item__actions">
+                        <form th:action="@{/notifications/{id}/read(id=${n.id})}" method="post"
+                              th:attr="link=${n.link}">
+                            <input type="hidden" name="link" th:value="${n.link}">
+                            <button class="btn btn--outline btn--sm" type="submit"
+                                    th:text="${n.link != null} ? 'Open' : 'Mark as read'">Open</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" th:if="${notifications.totalElements == 0}">
+                <i class="bi bi-bell-slash" aria-hidden="true"></i>
+                <h3>You're all caught up</h3>
+                <p>Booking updates, cash payments and new reviews will show up here.</p>
+                <a class="btn btn--primary" th:href="@{/services}">Browse services</a>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: pagination(${notifications}, '/notifications')}"></div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

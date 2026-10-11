@@ -1,0 +1,123 @@
+spring:
+  application:
+    name: market
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  mongodb:
+    uri: ${MONGODB_URI:mongodb+srv://mongo:mangomango@apitesting.fdd2m4g.mongodb.net/serviceDB?appName=apiTesting}
+  data:
+    mongodb:
+      auto-index-creation: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:rashedulislam.raze@gmail.com}
+    password: ${MAIL_PASSWORD:cyjrhvzssouxzbec}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:true}
+            required: ${MAIL_SMTP_STARTTLS:true}
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:llama3.2}
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    mail:
+      enabled: false
+
+app:
+  name: ${APP_NAME:ServiZone}
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  # One business time zone for working hours, "today" and booking dates.
+  timezone: ${APP_TIMEZONE:Asia/Dhaka}
+  mail:
+    from: ${MAIL_FROM:rashedulislam.raze@gmail.com}
+  contact:
+    # Where contact-form submissions are delivered. Leave blank to disable the relay
+    # (the page still confirms receipt, nothing is stored).
+    to: ${CONTACT_EMAIL:${MAIL_USERNAME:rashedulislam.raze@gmail.com}}
+  storage:
+    path: ${STORAGE_PATH:./storage}
+  security:
+    max-login-attempts: 5
+    lock-minutes: 15
+  otp:
+    secret: ${OTP_SECRET:dev-only-otp-secret-change-me}
+    expiry-minutes: 10
+    max-attempts: 5
+    resend-cooldown-seconds: 60
+    max-per-hour: 5
+  booking:
+    # Platform fee charged on top of the service price (cash only, no online payment).
+    platform-fee-percent: ${PLATFORM_FEE_PERCENT:5}
+    # Customers may cancel free of charge until this many hours before the start time.
+    cancel-cutoff-hours: 2
+    # Minimum notice for a same-day booking.
+    min-notice-minutes: 120
+    # How far ahead bookings may be made.
+    max-advance-days: 60
+    # Granularity of the offered time slots.
+    slot-step-minutes: 30
+  chatbot:
+    # The assistant uses a local Ollama model when one is running. Switch it off to answer
+    # entirely from the built-in rules, which need no model and work on any deployment.
+    enabled: ${CHATBOT_ENABLED:true}
+    # Hard limit on how long to wait for the model before answering from the rules instead.
+    # Generous enough for a cold local model to load, short enough that one bad wait goes unnoticed.
+    timeout-seconds: ${CHATBOT_TIMEOUT_SECONDS:12}
+    # Turns kept in the HTTP session; older turns are dropped so the page cannot grow forever.
+    history-size: 12
+    # Services listed in one answer.
+    max-results: 4
+    # A refused connection to a local model is retried with a back-off, so without a limit every
+    # question waits out the full timeout. After this many failures in a row the model is left alone
+    # for the cooling-off period and the built-in answers reply immediately. The circuit closes on
+    # its own, so a model that starts later is picked up without a restart.
+    # One, not two: a single miss already means the model is not answering, and a plain answer
+    # from the rules beats a second slow one. The cooling-off period covers a blip.
+    failure-threshold: ${CHATBOT_FAILURE_THRESHOLD:1}
+    cooldown-seconds: ${CHATBOT_COOLDOWN_SECONDS:120}
+  admin:
+    # Optional bootstrap administrator, created on first start only when no ADMIN exists.
+    # Both values must be supplied in production; leave blank to skip bootstrapping.
+    email: ${ADMIN_EMAIL:admin@gmail.com}
+    password: ${ADMIN_PASSWORD:admin12345}
+    name: ${ADMIN_NAME:Administrator}

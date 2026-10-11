@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Verify your email</title>
+    <th:block th:fragment="extraHead">
+        <link rel="stylesheet" th:href="@{/css/auth.css}">
+        <style>
+            /* ServiZone verify email — ReUI-style card. Scoped with the .rl- prefix so it won't clash with auth.css. */
+            .rl-page {
+                --rl-fg: #0a0a0a;
+                --rl-muted: #737373;
+                --rl-border: #e5e5e5;
+                --rl-danger: #dc2626;
+                --rl-radius: 8px;
+                display: flex;
+                justify-content: center;
+                padding: 56px 16px 72px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--rl-fg);
+            }
+
+            .rl-card {
+                width: 100%;
+                max-width: 360px;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                padding: 0;
+                text-align: center;
+            }
+
+            .rl-logo {
+                width: 32px;
+                height: 32px;
+                margin: 0 auto 18px;
+                display: grid;
+                place-items: center;
+                border-radius: 9px;
+                background: #171717;
+                color: #fff;
+            }
+
+            .rl-title {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+                line-height: 1.3;
+                letter-spacing: -.01em;
+                color: var(--rl-fg);
+            }
+
+            .rl-sub {
+                margin: 6px 0 22px;
+                font-size: 14px;
+                line-height: 1.5;
+                color: var(--rl-muted);
+            }
+            .rl-sub strong {
+                font-weight: 500;
+                color: var(--rl-fg);
+                word-break: break-all;
+            }
+
+            .rl-card .alert { text-align: left; margin-bottom: 14px; font-size: 13px; }
+
+            /* Fields */
+            .rl-field { text-align: left; margin-bottom: 14px; }
+
+            .rl-label {
+                display: block;
+                margin-bottom: 7px;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--rl-fg);
+            }
+
+            .rl-input {
+                display: block;
+                width: 100%;
+                height: 32px;
+                padding: 0 12px;
+                font: inherit;
+                font-size: 14px;
+                color: var(--rl-fg);
+                background: #fff;
+                border: 1px solid var(--rl-border);
+                border-radius: var(--rl-radius);
+                outline: none;
+                box-shadow: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .rl-input::placeholder { color: #8a8a8a; }
+            .rl-input:focus {
+                border-color: #a3a3a3;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+            }
+
+            /* One-time code */
+            .rl-input--code {
+                height: 40px;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 500;
+                letter-spacing: .5em;
+                padding-left: calc(12px + .5em);
+                font-variant-numeric: tabular-nums;
+            }
+            .rl-input--code::placeholder { letter-spacing: .5em; color: #c4c4c4; }
+
+            .rl-error {
+                margin: 6px 0 0;
+                font-size: 12px;
+                color: var(--rl-danger);
+                text-align: left;
+            }
+            .rl-field.has-error .rl-input { border-color: var(--rl-danger); }
+            .rl-field.has-error .rl-input:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .12); }
+
+            /* Button */
+            .rl-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 32px;
+                margin-top: 6px;
+                padding: 0 14px;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                color: #fff;
+                background: #171717;
+                border: 1px solid #171717;
+                border-radius: var(--rl-radius);
+                cursor: pointer;
+                transition: background-color .15s;
+            }
+            .rl-btn:hover { background: #2b2b2b; }
+            .rl-btn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+
+            /* Resend code */
+            .rl-foot {
+                margin: 22px 0 0;
+                font-size: 14px;
+                color: var(--rl-muted);
+            }
+            .rl-linkbtn {
+                margin-left: 2px;
+                padding: 0;
+                font: inherit;
+                font-weight: 500;
+                color: var(--rl-fg);
+                background: none;
+                border: 0;
+                cursor: pointer;
+            }
+            .rl-linkbtn:hover { text-decoration: underline; }
+            .rl-linkbtn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; border-radius: 2px; }
+
+            @media (max-width: 420px) {
+                .rl-page { padding-top: 36px; }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="rl-page">
+    <section class="rl-card" aria-labelledby="verify-title">
+
+<!--        <div class="rl-logo" aria-hidden="true">-->
+<!--            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"-->
+<!--                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">-->
+<!--                <path d="M7 5v8a5 5 0 0 0 10 0V5"/>-->
+<!--            </svg>-->
+<!--        </div>-->
+
+        <h1 id="verify-title" class="rl-title">Verify your email</h1>
+        <p class="rl-sub">
+            Enter the 6-digit code we sent to
+            <strong th:text="${verifyOtpRequest.email}">you@example.com</strong>.
+            It expires in 10 minutes.
+        </p>
+
+        <div class="alert alert--info" role="status" th:if="${param.pending}">
+            <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+            <span>Your email isn't verified yet. Enter the code, or request a new one below.</span>
+        </div>
+
+        <form th:action="@{/verify-otp}" th:object="${verifyOtpRequest}" method="post" data-loading-on-submit>
+            <input type="hidden" th:field="*{email}">
+
+            <div class="rl-field" th:classappend="${#fields.hasErrors('code')} ? 'has-error'">
+                <label class="rl-label" for="code">Verification code</label>
+                <input class="rl-input rl-input--code" type="text" id="code" th:field="*{code}"
+                       inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code"
+                       placeholder="000000" autofocus>
+                <p class="rl-error" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></p>
+            </div>
+
+            <p class="rl-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            <button class="rl-btn" type="submit">Verify email</button>
+        </form>
+
+        <form class="rl-foot" th:action="@{/resend-otp}" method="post">
+            <input type="hidden" name="email" th:value="${verifyOtpRequest.email}">
+            Didn't get a code? <button class="rl-linkbtn" type="submit">Send a new code</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

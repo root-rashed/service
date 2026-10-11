@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'Find trusted local professionals | ' + ${@environment.getProperty('app.name', 'ServiZone')}">Find trusted local professionals</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="Book verified professionals for home services, repairs, beauty, wellness, tutoring and tech support. Compare prices and reviews, then pay in cash after the job.">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Find the right service, right when you need it">
+        <meta property="og:description" content="Book verified local professionals and pay in cash after the service.">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/home.css}">
+        <style>
+            /* ServiZone Home — ReUI-style look. Every rule is scoped under .hm (the <main> class).
+               Only the hero, "Why choose us" and the CTA band are restyled here. */
+            .hm {
+                --hm-fg: #0a0a0a;
+                --hm-muted: #737373;
+                --hm-border: #e5e5e5;
+                --hm-hover: #f5f5f5;
+                --hm-primary: #171717;
+                --hm-radius: 8px;
+                --hm-radius-card: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--hm-fg);
+            }
+
+            /* ============ HERO ============ */
+            .hm .hero {
+                position: relative;
+                padding: 64px 0 72px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                border-bottom: 1px solid var(--hm-border);
+                overflow: hidden;
+            }
+            .hm .hero .hero__inner {
+                display: grid;
+                grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+                gap: 48px;
+                align-items: center;
+            }
+            .hm .hero .hero__copy { min-width: 0; }
+
+            .hm .hero .hero__title {
+                margin: 0;
+                font-family: inherit;
+                font-size: clamp(32px, 4.6vw, 52px);
+                font-weight: 600;
+                line-height: 1.08;
+                letter-spacing: -.03em;
+                color: var(--hm-fg);
+            }
+            .hm .hero .hero__title span {
+                display: block;
+                color: var(--hm-muted);
+                background: none;
+                -webkit-text-fill-color: currentColor;
+            }
+            .hm .hero .hero__lead {
+                max-width: 520px;
+                margin: 18px 0 28px;
+                font-size: 16px;
+                line-height: 1.6;
+                color: var(--hm-muted);
+            }
+
+            /* Search bar: one 1px bordered unit, 36px submit button */
+            .hm .hero .search-bar {
+                display: flex;
+                align-items: stretch;
+                gap: 0;
+                max-width: 600px;
+                margin: 0;
+                padding: 6px;
+                background: #fff;
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius-card);
+                box-shadow: none;
+            }
+            .hm .hero .search-bar__field {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+                margin: 0;
+                padding: 6px 12px;
+                background: transparent;
+                border: 0;
+                border-radius: var(--hm-radius);
+                box-shadow: none;
+                cursor: text;
+                transition: background-color .15s;
+            }
+            .hm .hero .search-bar__field + .search-bar__field {
+                border-left: 1px solid var(--hm-border);
+                border-radius: 0 var(--hm-radius) var(--hm-radius) 0;
+            }
+            .hm .hero .search-bar__field:focus-within { background: var(--hm-hover); }
+            .hm .hero .search-bar__field > i {
+                flex: none;
+                font-size: 16px;
+                color: var(--hm-muted);
+            }
+            .hm .hero .search-bar__text {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-width: 0;
+            }
+            .hm .hero .search-bar__label {
+                margin: 0 0 2px;
+                font-size: 11px;
+                font-weight: 500;
+                line-height: 1.2;
+                color: var(--hm-muted);
+                text-transform: none;
+                letter-spacing: 0;
+            }
+            .hm .hero .search-bar__input {
+                display: block;
+                width: 100%;
+                height: 20px;
+                padding: 0;
+                margin: 0;
+                font: inherit;
+                font-size: 14px;
+                color: var(--hm-fg);
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
+                outline: none;
+            }
+            .hm .hero .search-bar__input::placeholder { color: #a3a3a3; }
+            .hm .hero .search-bar__submit {
+                flex: none;
+                align-self: center;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                margin-left: 6px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                color: #fff;
+                background: var(--hm-primary);
+                border: 1px solid var(--hm-primary);
+                border-radius: var(--hm-radius);
+                box-shadow: none;
+                transform: none;
+                cursor: pointer;
+                transition: background-color .15s;
+            }
+            .hm .hero .search-bar__submit:hover { background: #2b2b2b; border-color: #2b2b2b; transform: none; box-shadow: none; }
+            .hm .hero .search-bar__submit:focus-visible { outline: 2px solid var(--hm-primary); outline-offset: 2px; }
+
+            /* Trust list: grey icon tiles */
+            .hm .hero .hero-trust {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 14px 28px;
+                margin: 28px 0 0;
+                padding: 0;
+                list-style: none;
+            }
+            .hm .hero .hero-trust__item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 0;
+                padding: 0;
+                background: none;
+                border: 0;
+                box-shadow: none;
+            }
+            .hm .hero .hero-trust__item > i {
+                flex: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+                color: #404040;
+                background: var(--hm-hover);
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius);
+            }
+            .hm .hero .hero-trust__item div { display: flex; flex-direction: column; }
+            .hm .hero .hero-trust__item strong { font-size: 13px; font-weight: 600; color: var(--hm-fg); }
+            .hm .hero .hero-trust__item span { font-size: 12px; color: var(--hm-muted); }
+
+            /* Right side: image frame (replace the demo src with your own image) */
+            .hm .hero .hero__visual { position: relative; min-width: 0; }
+            .hm .hero .hero__plate { display: none; }
+            .hm .hero .hero__art {
+                display: block;
+                width: 100%;
+                height: auto;
+                aspect-ratio: 5 / 4;
+                object-fit: cover;
+                background: var(--hm-hover);
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius-card);
+                box-shadow: none;
+            }
+            .hm .hero .float-card {
+                position: absolute;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 12px;
+                background: #fff;
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius-card);
+                box-shadow: none;
+                animation: none;
+                transform: none;
+            }
+            .hm .hero .float-card--a { top: auto; right: auto; left: 16px; bottom: 16px; }
+            .hm .hero .float-card--b { bottom: auto; left: auto; right: 16px; top: 16px; }
+            .hm .hero .float-card__icon {
+                flex: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                font-size: 15px;
+                color: #404040;
+                background: var(--hm-hover);
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius);
+            }
+            .hm .hero .float-card div { display: flex; flex-direction: column; }
+            .hm .hero .float-card strong { font-size: 13px; font-weight: 600; color: var(--hm-fg); }
+            .hm .hero .float-card span:not(.float-card__icon) { font-size: 12px; color: var(--hm-muted); }
+
+            /* Trust panel image (placeholder; replace the demo src) */
+            .hm .trust-panel .trust-panel__image {
+                display: block;
+                width: 100%;
+                height: auto;
+                max-height: 220px;
+                object-fit: cover;
+                background: var(--hm-hover);
+                border-radius: var(--hm-radius);
+            }
+
+            /* ============ WHY CHOOSE US ============ */
+            .hm [aria-labelledby="why-title"] .feature-card {
+                background: #fff;
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .hm [aria-labelledby="why-title"] .feature-card:hover { transform: none; box-shadow: none; border-color: var(--hm-border); }
+            .hm [aria-labelledby="why-title"] .feature-grid .feature-card .feature-card__icon {
+                background: var(--hm-hover);
+                color: #404040;
+                border: 1px solid var(--hm-border);
+                border-radius: var(--hm-radius);
+                box-shadow: none;
+            }
+            .hm [aria-labelledby="why-title"] .feature-card h3 { font-weight: 600; letter-spacing: -.01em; color: var(--hm-fg); }
+            .hm [aria-labelledby="why-title"] .feature-card p { color: var(--hm-muted); }
+
+            /* ============ CTA BAND ============ */
+            .hm [aria-labelledby="cta-title"] .cta-band {
+                background: var(--hm-primary);
+                background-image: none;
+                border: 1px solid var(--hm-primary);
+                border-radius: var(--hm-radius-card);
+                box-shadow: none;
+                color: #fff;
+            }
+            .hm [aria-labelledby="cta-title"] .cta-band h2 { color: #fff; font-weight: 600; letter-spacing: -.01em; }
+            .hm [aria-labelledby="cta-title"] .cta-band p { color: #a3a3a3; }
+            .hm [aria-labelledby="cta-title"] .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--hm-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .hm [aria-labelledby="cta-title"] .btn--primary { background: #fff; border-color: #fff; color: var(--hm-primary); }
+            .hm [aria-labelledby="cta-title"] .btn--primary:hover { background: var(--hm-hover); border-color: var(--hm-hover); color: var(--hm-primary); }
+            .hm [aria-labelledby="cta-title"] .btn--on-dark { background: transparent; border-color: #404040; color: #fff; }
+            .hm [aria-labelledby="cta-title"] .btn--on-dark:hover { background: #262626; border-color: #404040; color: #fff; }
+
+            /* ============ Responsive (hero) ============ */
+            @media (max-width: 900px) {
+                .hm .hero { padding: 40px 0 48px; }
+                .hm .hero .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+            }
+            @media (max-width: 560px) {
+                .hm .hero .search-bar { flex-direction: column; }
+                .hm .hero .search-bar__field + .search-bar__field {
+                    border-left: 0;
+                    border-top: 1px solid var(--hm-border);
+                    border-radius: 0 0 var(--hm-radius) var(--hm-radius);
+                }
+                .hm .hero .search-bar__submit { align-self: stretch; margin: 6px 0 0; }
+                .hm .hero .float-card--b { display: none; }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="hm">
+
+    <!-- ===== Hero ===== -->
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="container hero__inner">
+            <div class="hero__copy">
+                <h1 class="hero__title" id="hero-title" data-enter>
+                    Find the Right Service,
+                    <span>Right When You Need It</span>
+                </h1>
+                <p class="hero__lead" data-enter>
+                    Book verified professionals for home services, repairs, beauty, wellness,
+                    tech support and more, all in one place.
+                </p>
+
+                <form class="search-bar" th:action="@{/search}" method="get" role="search" data-enter>
+                    <label class="search-bar__field search-bar__field--location">
+                        <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                        <span class="search-bar__text">
+                            <span class="search-bar__label">Your location</span>
+                            <input class="search-bar__input" type="text" name="location" list="area-suggestions"
+                                   placeholder="e.g. Mirpur, Dhaka" autocomplete="off">
+                        </span>
+                    </label>
+                    <label class="search-bar__field">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <span class="search-bar__text">
+                            <span class="search-bar__label">Service</span>
+                            <input class="search-bar__input" type="search" name="q"
+                                   placeholder="Search for services (plumber, cleaner, tutor...)">
+                        </span>
+                    </label>
+                    <button class="btn btn--primary search-bar__submit" type="submit" aria-label="Search">
+                        <i class="bi bi-search" aria-hidden="true"></i><span>Search</span>
+                    </button>
+                    <datalist id="area-suggestions">
+                        <option value="Mirpur"></option>
+                        <option value="Dhanmondi"></option>
+                        <option value="Gulshan"></option>
+                        <option value="Uttara"></option>
+                        <option value="Mohammadpur"></option>
+                        <option value="Banani"></option>
+                    </datalist>
+                </form>
+
+                <ul class="hero-trust" aria-label="Why people book here" data-enter>
+                    <li class="hero-trust__item"><i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <div><strong>Verified Professionals</strong><span>Reviewed before going live</span></div></li>
+                    <li class="hero-trust__item"><i class="bi bi-calendar2-check" aria-hidden="true"></i>
+                        <div><strong>Easy Booking</strong><span>Schedule in minutes</span></div></li>
+                    <li class="hero-trust__item"><i class="bi bi-headset" aria-hidden="true"></i>
+                        <div><strong>24/7 Support</strong><span>We're here to help</span></div></li>
+                </ul>
+            </div>
+
+            <div class="hero__visual" data-enter aria-hidden="true">
+                <span class="hero__plate"></span>
+                <img class="hero__art" alt="" width="520" height="416" th:src="@{/images/banner.jpg}">
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ===== Popular categories ===== -->
+    <section class="section" aria-labelledby="categories-title" data-reveal>
+        <div class="container">
+            <div class="section-head">
+                <div class="section-head__text">
+                    <h2 id="categories-title">Popular Categories</h2>
+                    <p>Explore a wide range of services tailored to your needs.</p>
+                </div>
+                <a class="link-more" th:href="@{/categories}">View all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="category-grid" data-reveal-group>
+                <th:block th:each="category : ${home.categories}">
+                    <a th:replace="~{fragments/cards :: categoryCard(${category})}"></a>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ===== Featured services ===== -->
+    <section class="section section--flush-top" aria-labelledby="services-title" data-reveal>
+        <div class="container">
+            <div class="section-head">
+                <div class="section-head__text">
+                    <h2 id="services-title">Featured Services</h2>
+                    <p>Top rated and most popular services from our trusted professionals.</p>
+                </div>
+                <a class="link-more" th:href="@{/services}">View all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="service-grid" data-reveal-group th:if="${!home.featuredServices.isEmpty()}">
+                <th:block th:each="service : ${home.featuredServices}">
+                    <article th:replace="~{fragments/cards :: serviceCard(${service})}"></article>
+                </th:block>
+            </div>
+
+            <div class="empty-state" th:if="${home.featuredServices.isEmpty()}">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                <h3>Services are on their way</h3>
+                <p>Verified professionals are setting up their services. Check back soon, or offer your own.</p>
+                <a class="btn btn--primary" th:href="@{/register(type='WORKER')}">Become a professional</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Featured workers ===== -->
+    <section class="section section--soft" aria-labelledby="workers-title" data-reveal th:if="${!home.featuredWorkers.isEmpty()}">
+        <div class="container">
+            <div class="section-head">
+                <div class="section-head__text">
+                    <h2 id="workers-title">Featured Professionals</h2>
+                    <p>Experienced, reviewed and ready to help.</p>
+                </div>
+                <a class="link-more" th:href="@{/workers}">View all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="worker-grid" data-reveal-group>
+                <th:block th:each="worker : ${home.featuredWorkers}">
+                    <article th:replace="~{fragments/cards :: workerCard(${worker})}"></article>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== How it works + trust panel ===== -->
+    <section class="section" id="how-it-works" aria-labelledby="how-title" data-reveal>
+        <div class="container how">
+            <div>
+                <h2 id="how-title">How It Works</h2>
+                <p>Get your desired service in just a few simple steps.</p>
+                <ol class="steps" data-reveal-group>
+                    <li class="step">
+                        <div class="step__head"><span class="step__num">1</span><span class="step__icon"><i class="bi bi-search" aria-hidden="true"></i></span></div>
+                        <h3>Search</h3><p>Find the service you need in your area.</p>
+                    </li>
+                    <li class="step">
+                        <div class="step__head"><span class="step__num">2</span><span class="step__icon"><i class="bi bi-list-check" aria-hidden="true"></i></span></div>
+                        <h3>Compare</h3><p>Check profiles, reviews and prices.</p>
+                    </li>
+                    <li class="step">
+                        <div class="step__head"><span class="step__num">3</span><span class="step__icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span></div>
+                        <h3>Book</h3><p>Choose your preferred time and confirm.</p>
+                    </li>
+                    <li class="step step--done">
+                        <div class="step__head"><span class="step__num">4</span><span class="step__icon"><i class="bi bi-check2-circle" aria-hidden="true"></i></span></div>
+                        <h3>Relax</h3><p>Your professional is on the way. Pay in cash when it's done.</p>
+                    </li>
+                </ol>
+                <a class="btn btn--primary" th:href="@{/services}">Get started <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+
+
+
+            <div class="trust-panel">
+                <img class="trust-panel__image" alt="" width="600" height="200" th:src="@{/images/trust.jpeg}">
+                <h3>Making everyday life easier with reliable local services.</h3>
+                <div>
+                    <div class="trust-panel__stats">
+                        <div class="trust-panel__stat" th:each="stat : ${home.stats}">
+                            <strong th:text="${stat.value}">25K+</strong>
+                            <span th:text="${stat.label}">Happy customers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Why choose us ===== -->
+    <section class="section section--soft" aria-labelledby="why-title" data-reveal>
+        <div class="container">
+            <div class="section-head">
+                <div class="section-head__text">
+                    <h2 id="why-title">Why Choose Us</h2>
+                    <p>Booking local help should feel simple and safe.</p>
+                </div>
+            </div>
+            <div class="feature-grid" data-reveal-group>
+                <div class="feature-card tone-blue">
+                    <span class="feature-card__icon"><i class="bi bi-patch-check" aria-hidden="true"></i></span>
+                    <h3>Verified professionals</h3>
+                    <p>Every professional is reviewed by our team before their services go live.</p>
+                </div>
+                <div class="feature-card tone-green">
+                    <span class="feature-card__icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
+                    <h3>Cash after service</h3>
+                    <p>No cards and no online payment. You pay the professional once the job is done.</p>
+                </div>
+                <div class="feature-card tone-orange">
+                    <span class="feature-card__icon"><i class="bi bi-tag" aria-hidden="true"></i></span>
+                    <h3>Clear pricing</h3>
+                    <p>See the price and the platform fee before you confirm, with no surprises.</p>
+                </div>
+                <div class="feature-card tone-purple">
+                    <span class="feature-card__icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+                    <h3>Stay informed</h3>
+                    <p>Track every booking and get notified when your professional accepts or arrives.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== Customer reviews ===== -->
+    <section class="section" aria-labelledby="reviews-title" data-reveal th:if="${!home.reviews.isEmpty()}">
+        <div class="container">
+            <div class="section-head">
+                <div class="section-head__text">
+                    <h2 id="reviews-title">What Customers Say</h2>
+                    <p>Honest reviews from people who booked through the marketplace.</p>
+                </div>
+            </div>
+            <div class="review-grid" data-reveal-group>
+                <th:block th:each="review : ${home.reviews}">
+                    <article th:replace="~{fragments/cards :: reviewCard(${review})}"></article>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="section section--flush-top" aria-labelledby="cta-title" data-reveal>
+        <div class="container">
+            <div class="cta-band">
+                <div>
+                    <h2 id="cta-title">Ready to get it done?</h2>
+                    <p>Find a trusted professional near you, or start earning by offering your own services.</p>
+                </div>
+                <div class="cta-band__actions">
+                    <a class="btn btn--primary btn--lg" th:href="@{/services}">Browse services</a>
+                    <a class="btn btn--on-dark btn--lg" th:href="@{/register(type='WORKER')}">Become a professional</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

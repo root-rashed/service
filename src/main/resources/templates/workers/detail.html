@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="${worker.name} + ' - ' + ${worker.profession} + ' | ' + ${@environment.getProperty('app.name', 'ServiZone')}">Professional</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" th:content="${#strings.abbreviate(worker.bio, 155)}">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone Professional profile — ReUI-style look. Every rule is scoped under .wd (the <main> class). */
+            .wd {
+                --c-fg: #0a0a0a;
+                --c-muted: #737373;
+                --c-border: #e5e5e5;
+                --c-hover: #f5f5f5;
+                --c-primary: #171717;
+                --c-radius: 8px;
+                --c-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--c-fg);
+            }
+            .wd .section { background: transparent; }
+            .wd h1, .wd h2, .wd h3 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.01em;
+                color: var(--c-fg);
+            }
+            .wd p, .wd .page-head p { color: var(--c-muted); }
+            .wd strong { color: var(--c-fg); font-weight: 600; }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .wd .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--c-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .wd .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .wd .btn:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+            .wd .btn--primary { background: var(--c-primary); border-color: var(--c-primary); color: #fff; }
+            .wd .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+            .wd .btn--outline { background: #fff; border-color: var(--c-border); color: var(--c-fg); }
+            .wd .btn--outline:hover { background: var(--c-hover); border-color: var(--c-border); color: var(--c-fg); }
+
+            /* Cards: 1px border, 12px radius, no shadow, no hover lift */
+            .wd .card {
+                background: #fff;
+                border: 1px solid var(--c-border);
+                border-radius: var(--c-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .wd .card:hover { transform: none; box-shadow: none; border-color: var(--c-border); }
+
+            /* Header: neutral avatar tile, whatever tone-* class is present */
+            .wd .profile-head .profile-head__avatar {
+                background: var(--c-hover);
+                color: #404040;
+                border: 1px solid var(--c-border);
+                box-shadow: none;
+            }
+            .wd .profile-head__role,
+            .wd .profile-head__meta,
+            .wd .rating__count { color: var(--c-muted); }
+            .wd .rating { color: var(--c-fg); }
+            .wd .rating i { color: var(--c-primary); }
+
+            /* Badges: neutral grey */
+            .wd .badge {
+                background: var(--c-hover);
+                color: var(--c-fg);
+                border: 1px solid var(--c-border);
+                box-shadow: none;
+            }
+            .wd .badge i { color: #404040; }
+
+            /* Sections */
+            .wd .profile-section h2,
+            .wd .profile-side h2 { font-weight: 600; color: var(--c-fg); }
+            .wd .prose,
+            .wd .form-hint { color: var(--c-muted); }
+
+            /* Skill chips */
+            .wd .chip {
+                color: var(--c-fg);
+                background: var(--c-hover);
+                border: 1px solid var(--c-border);
+                border-radius: var(--c-radius);
+                box-shadow: none;
+            }
+
+            /* Quick facts */
+            .wd .facts dt { color: var(--c-muted); font-weight: 500; }
+            .wd .facts dd { color: var(--c-fg); }
+            .wd .facts > div { border-bottom: 1px solid var(--c-border); }
+            .wd .facts > div:last-child { border-bottom: 0; }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="wd">
+    <section class="section">
+        <div class="container profile-layout">
+            <div class="profile-stack">
+                <header class="card card--pad profile-head" th:classappend="'tone-' + ${worker.tone}">
+                    <span class="worker-card__avatar profile-head__avatar" aria-hidden="true">
+                        <img th:if="${worker.profileImageUrl != null}" th:src="@{${worker.profileImageUrl}}" alt="">
+                        <th:block th:unless="${worker.profileImageUrl != null}"
+                                  th:text="${#strings.toUpperCase(#strings.substring(worker.name, 0, 1))}">R</th:block>
+                    </span>
+                    <div>
+                        <h1 th:text="${worker.name}">Worker name</h1>
+                        <p class="profile-head__role" th:text="${worker.profession}">Profession</p>
+                        <div class="profile-head__meta">
+                            <span class="badge badge--green" th:if="${worker.verified}">
+                                <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified
+                            </span>
+                            <span class="rating" th:if="${worker.reviewCount > 0}">
+                                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                <span th:text="${#numbers.formatDecimal(worker.rating, 1, 'COMMA', 1, 'POINT')}">4.9</span>
+                                <span class="rating__count" th:text="'(' + ${worker.reviewCount} + ' reviews)'">(10 reviews)</span>
+                            </span>
+                            <span class="badge badge--orange-soft" th:unless="${worker.reviewCount > 0}">New</span>
+                            <span><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${worker.location}">Mirpur</span></span>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="card card--pad profile-section" aria-labelledby="about-title">
+                    <h2 id="about-title">About</h2>
+                    <p class="prose" th:text="${worker.bio}">Bio</p>
+                </section>
+
+                <section class="card card--pad profile-section" th:if="${!worker.skills.isEmpty()}" aria-labelledby="skills-title">
+                    <h2 id="skills-title">Skills</h2>
+                    <ul class="chip-list">
+                        <li class="chip" th:each="skill : ${worker.skills}" th:text="${skill}">Skill</li>
+                    </ul>
+                </section>
+
+                <section class="card card--pad profile-section" aria-labelledby="reviews-title">
+                    <h2 id="reviews-title">Reviews</h2>
+                    <p class="form-hint" th:if="${reviews.isEmpty()}">No reviews yet. Reviews appear after customers complete a booking.</p>
+                    <th:block th:if="${!reviews.isEmpty()}">
+                        <p class="form-hint">
+                            <span th:text="${worker.reviewCount}">0</span> review(s), average
+                            <strong th:text="${#numbers.formatDecimal(worker.rating, 1, 'COMMA', 1, 'POINT')}">4.9</strong> out of 5.
+                        </p>
+                        <div class="review-grid">
+                            <th:block th:each="review : ${reviews}">
+                                <article th:replace="~{fragments/cards :: reviewCard(${review})}"></article>
+                            </th:block>
+                        </div>
+                    </th:block>
+                </section>
+            </div>
+
+            <aside class="card card--pad profile-side" aria-labelledby="facts-title">
+                <h2 id="facts-title" style="font-size: var(--fs-lg); letter-spacing: 0;">Quick facts</h2>
+                <dl class="facts">
+                    <div><dt>Experience</dt><dd><span th:text="${worker.experienceYears}">5</span> years</dd></div>
+                    <div><dt>Jobs completed</dt><dd th:text="${worker.completedJobs}">0</dd></div>
+                    <div><dt>Main area</dt><dd th:text="${worker.location}">Mirpur</dd></div>
+                    <div th:if="${worker.serviceArea != null}"><dt>Service area</dt><dd th:text="${worker.serviceArea}">Areas</dd></div>
+                </dl>
+                <a class="btn btn--outline btn--block" style="margin-top: 1.25rem;" th:href="@{/workers}">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> All professionals
+                </a>
+            </aside>
+        </div>
+    </section>
+</main>
+</body>
+</html>

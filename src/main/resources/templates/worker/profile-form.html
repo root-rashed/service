@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My professional profile</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <script th:src="@{/js/media.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>My professional profile</h1>
+                <p>This is what customers see before they book you.</p>
+            </div>
+
+            <!-- Verification status -->
+            <div class="alert alert--info status-banner" th:if="${profile == null}">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span>Create your profile to get started. Our team reviews every profile before it goes live.</span>
+            </div>
+            <div class="alert alert--warning status-banner" th:if="${profile != null and profile.verificationStatus.name() == 'PENDING'}">
+                <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                <span>Your profile is under review. It will appear in search once it is approved.</span>
+            </div>
+            <div class="alert alert--success status-banner" th:if="${profile != null and profile.verificationStatus.name() == 'APPROVED'}">
+                <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+                <span>Your profile is live. <a th:href="@{/workers/{slug}(slug=${profile.slug})}">View public profile</a></span>
+            </div>
+            <div class="alert alert--error status-banner" th:if="${profile != null and profile.verificationStatus.name() == 'REJECTED'}">
+                <i class="bi bi-x-octagon-fill" aria-hidden="true"></i>
+                <span>Your profile was not approved. Update your details, or <a th:href="@{/contact}">contact support</a>.</span>
+            </div>
+            <div class="alert alert--error status-banner" th:if="${profile != null and profile.verificationStatus.name() == 'SUSPENDED'}">
+                <i class="bi bi-slash-circle-fill" aria-hidden="true"></i>
+                <span>Your profile is suspended. Please <a th:href="@{/contact}">contact support</a>.</span>
+            </div>
+
+            <div th:replace="~{fragments/profile-photo :: photoCard(${account}, '/worker/profile/photo', '/worker/profile/photo/remove')}"></div>
+
+            <form class="card card--pad" th:action="@{/worker/profile}" th:object="${workerProfileForm}" method="post" data-loading-on-submit>
+                <p class="form-error" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+                <div class="form-section">
+                    <h2>About you</h2>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('headline')} ? 'has-error'">
+                        <label class="form-label" for="headline">Profession</label>
+                        <input class="form-control" type="text" id="headline" th:field="*{headline}" placeholder="e.g. Plumber, Math tutor, Photographer">
+                        <p class="form-error" th:if="${#fields.hasErrors('headline')}" th:errors="*{headline}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('bio')} ? 'has-error'">
+                        <label class="form-label" for="bio">Bio</label>
+                        <textarea class="form-control" id="bio" rows="5" th:field="*{bio}"
+                                  placeholder="Describe your experience, the work you do and what customers can expect."></textarea>
+                        <p class="form-hint" th:unless="${#fields.hasErrors('bio')}">30 to 1000 characters.</p>
+                        <p class="form-error" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field" th:classappend="${#fields.hasErrors('experienceYears')} ? 'has-error'">
+                            <label class="form-label" for="experienceYears">Years of experience</label>
+                            <input class="form-control" type="number" min="0" max="60" id="experienceYears" th:field="*{experienceYears}">
+                            <p class="form-error" th:if="${#fields.hasErrors('experienceYears')}" th:errors="*{experienceYears}"></p>
+                        </div>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('skillsText')} ? 'has-error'">
+                            <label class="form-label" for="skillsText">Skills</label>
+                            <input class="form-control" type="text" id="skillsText" th:field="*{skillsText}" placeholder="Pipe repair, Leak detection, Fittings">
+                            <p class="form-hint" th:unless="${#fields.hasErrors('skillsText')}">Separate with commas. Up to 10.</p>
+                            <p class="form-error" th:if="${#fields.hasErrors('skillsText')}" th:errors="*{skillsText}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Where you work</h2>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('area')} ? 'has-error'">
+                        <label class="form-label" for="area">Main area</label>
+                        <input class="form-control" type="text" id="area" th:field="*{area}" placeholder="e.g. Mirpur">
+                        <p class="form-error" th:if="${#fields.hasErrors('area')}" th:errors="*{area}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('serviceArea')} ? 'has-error'">
+                        <label class="form-label" for="serviceArea">Areas you serve <span class="text-muted">(optional)</span></label>
+                        <input class="form-control" type="text" id="serviceArea" th:field="*{serviceArea}" placeholder="e.g. Mirpur, Pallabi, Kafrul">
+                        <p class="form-error" th:if="${#fields.hasErrors('serviceArea')}" th:errors="*{serviceArea}"></p>
+                    </div>
+
+                    <details class="disclosure" th:open="${#fields.hasErrors('latitude') or #fields.hasErrors('longitude') or workerProfileForm.latitude != null}">
+                        <summary>Map position (optional)</summary>
+                        <p class="form-hint" style="margin-bottom: 1rem;">Adding coordinates lets customers find you with "near me" searches.</p>
+                        <div class="form-row">
+                            <div class="form-field" th:classappend="${#fields.hasErrors('latitude')} ? 'has-error'">
+                                <label class="form-label" for="latitude">Latitude</label>
+                                <input class="form-control" type="number" step="any" id="latitude" th:field="*{latitude}" placeholder="23.8103">
+                                <p class="form-error" th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}"></p>
+                            </div>
+                            <div class="form-field" th:classappend="${#fields.hasErrors('longitude')} ? 'has-error'">
+                                <label class="form-label" for="longitude">Longitude</label>
+                                <input class="form-control" type="number" step="any" id="longitude" th:field="*{longitude}" placeholder="90.4125">
+                                <p class="form-error" th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}"></p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn--primary" type="submit">Save profile</button>
+                    <a class="btn btn--ghost" th:href="@{/}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

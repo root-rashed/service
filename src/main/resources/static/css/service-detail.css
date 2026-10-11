@@ -1,0 +1,63 @@
+/* Public service detail page */
+.detail-page { padding-bottom: var(--space-6); }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-6); align-items: start; }
+.detail-stack { display: grid; gap: var(--space-5); }
+
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: var(--space-4); font-size: var(--fs-sm); color: var(--text-subtle); }
+.breadcrumb li + li::before { content: "/"; margin: 0 var(--space-2); color: var(--border-strong); }
+.breadcrumb a:hover { color: var(--orange-500); }
+.breadcrumb [aria-current] { color: var(--navy-900); font-weight: 600; }
+
+.gallery { display: grid; place-items: center; height: 340px; border-radius: var(--radius-xl); background: var(--tone-bg); color: var(--tone-fg); font-size: 6rem; overflow: hidden; }
+.gallery img { width: 100%; height: 100%; object-fit: cover; }
+
+.detail-head h1 { margin: var(--space-3) 0; font-size: var(--fs-3xl); }
+.detail-head__badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.detail-meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: var(--fs-sm); color: var(--text-muted); }
+.detail-meta i { margin-right: 4px; }
+
+.detail-section h2 { margin-bottom: var(--space-3); font-size: var(--fs-xl); letter-spacing: 0; }
+.detail-section p:last-child { margin-bottom: 0; }
+.checklist { display: grid; gap: var(--space-3); }
+.checklist li { display: flex; align-items: flex-start; gap: var(--space-3); }
+.checklist i { color: var(--green-500); margin-top: 3px; }
+
+.worker-summary { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.worker-summary__avatar { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--tone-bg); color: var(--tone-fg); font-size: 1.5rem; font-weight: 800; flex-shrink: 0; }
+.worker-summary__info { flex: 1 1 200px; min-width: 0; }
+.worker-summary__info h3 { margin: 0; font-size: var(--fs-lg); letter-spacing: 0; }
+.worker-summary__info p { margin: 0 0 var(--space-2); font-size: var(--fs-sm); }
+.worker-summary__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); font-size: var(--fs-xs); color: var(--text-subtle); }
+
+.booking-card { position: sticky; top: calc(var(--header-h) + var(--space-4)); }
+.booking-card__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.booking-card__price strong { font-size: 2rem; line-height: 1; letter-spacing: -0.02em; }
+.booking-card__price span { font-size: var(--fs-sm); color: var(--text-subtle); }
+.booking-card .facts { margin-bottom: var(--space-5); }
+.booking-card__actions { display: grid; gap: var(--space-3); }
+.booking-card__note { display: flex; gap: var(--space-2); margin: var(--space-4) 0 0; font-size: var(--fs-xs); color: var(--text-muted); }
+.booking-card__note i { color: var(--green-500); }
+
+.booking-bar { display: none; }
+
+@media (max-width: 900px) {
+  .detail-layout { grid-template-columns: 1fr; }
+  .booking-card { display: none; }
+  .detail-page { padding-bottom: 96px; }
+  .gallery { height: 240px; font-size: 4.5rem; }
+  .booking-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+    padding: 12px var(--space-4) calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff; border-top: 1px solid var(--border); box-shadow: 0 -6px 20px rgba(11, 31, 58, 0.08);
+  }
+  .booking-bar__price strong { display: block; font-size: var(--fs-xl); line-height: 1.1; }
+  .booking-bar__price span { font-size: var(--fs-xs); color: var(--text-subtle); }
+}
+
+/* Gallery thumbnails */
+.gallery-thumbs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: calc(var(--space-3) * -1); }
+.gallery-thumb { width: 84px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-soft); cursor: pointer; transition: border-color var(--transition); }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-thumb:hover { border-color: var(--border-strong); }
+.gallery-thumb.is-active { border-color: var(--orange-500); }

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'About us | ' + ${@environment.getProperty('app.name', 'ServiZone')}">About us</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="ServiZone is a local service marketplace: verified professionals, transparent prices, online booking and cash payment after the job is done.">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone About — ReUI-style look. Every rule is scoped under .ab (the <main> class). */
+            .ab {
+                --ab-fg: #0a0a0a;
+                --ab-muted: #737373;
+                --ab-border: #e5e5e5;
+                --ab-hover: #f5f5f5;
+                --ab-primary: #171717;
+                --ab-radius: 8px;
+                --ab-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--ab-fg);
+            }
+
+            /* Sections: transparent so the grid shows through; soft ones get hairline borders */
+            .ab .section,
+            .ab .section--soft {
+                background: transparent;
+            }
+            .ab .section--soft {
+                border-top: 1px solid var(--ab-border);
+                border-bottom: 1px solid var(--ab-border);
+            }
+
+            /* Typography */
+            .ab h1,
+            .ab h2,
+            .ab h3 {
+                font-family: inherit;
+                color: var(--ab-fg);
+                letter-spacing: -.01em;
+            }
+            .ab h1 { font-weight: 600; }
+            .ab h2,
+            .ab h3 { font-weight: 600; }
+            .ab p,
+            .ab .page-head p,
+            .ab .section-head p {
+                color: var(--ab-muted);
+            }
+            .ab strong { color: var(--ab-fg); font-weight: 600; }
+            .ab a:not(.btn) {
+                color: var(--ab-fg);
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+            .ab a:not(.btn):hover { text-decoration-thickness: 2px; }
+
+            /* Tick list: neutral icons */
+            .ab .tick-list li { color: var(--ab-muted); }
+            .ab .tick-list li > i {
+                color: #404040;
+            }
+
+            /* Cards: 1px border, 12px radius, no shadow, no hover lift */
+            .ab .card,
+            .ab .feature-card {
+                background: #fff;
+                border: 1px solid var(--ab-border);
+                border-radius: var(--ab-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .ab .card:hover,
+            .ab .feature-card:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: var(--ab-border);
+            }
+
+            /* Icon tiles: neutral grey, whatever tone-* class is present */
+            .ab .feature-grid .feature-card .feature-card__icon {
+                background: var(--ab-hover);
+                color: #404040;
+                border: 1px solid var(--ab-border);
+                border-radius: var(--ab-radius);
+                box-shadow: none;
+            }
+
+            /* "At a glance" facts */
+            .ab .about-side__title { font-weight: 600; }
+            .ab .facts dt { color: var(--ab-muted); font-weight: 500; }
+            .ab .facts dd { color: var(--ab-fg); }
+            .ab .facts > div {
+                border-bottom: 1px solid var(--ab-border);
+            }
+            .ab .facts > div:last-child { border-bottom: 0; }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .ab .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--ab-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .ab .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .ab .btn:focus-visible { outline: 2px solid var(--ab-primary); outline-offset: 2px; }
+
+            .ab .btn--primary {
+                background: var(--ab-primary);
+                border-color: var(--ab-primary);
+                color: #fff;
+            }
+            .ab .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+
+            .ab .btn--outline {
+                background: #fff;
+                border-color: var(--ab-border);
+                color: var(--ab-fg);
+            }
+            .ab .btn--outline:hover { background: var(--ab-hover); border-color: var(--ab-border); color: var(--ab-fg); }
+
+            /* Large buttons keep the same 36px control height */
+            .ab .btn--lg { height: 36px; min-height: 36px; padding: 0 18px; font-size: 14px; }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="ab">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>About <span th:text="${@environment.getProperty('app.name', 'ServiZone')}">ServiZone</span></h1>
+                <p>We connect neighbours with trusted local professionals &mdash; and keep the whole booking
+                    in one place, from first search to the finished job.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--soft">
+        <div class="container">
+            <div class="about-cols">
+                <div>
+                    <h2>What we do</h2>
+                    <p>
+                        Searching for a reliable plumber, electrician, cleaner, tutor or photographer usually means
+                        asking around, comparing messages and hoping for the best. We put every professional in one
+                        searchable catalogue with real prices, real availability and reviews from customers who
+                        actually paid for the work.
+                    </p>
+                    <p>
+                        Every professional creates a profile with their trade, experience, working area and skills.
+                        Our team reviews each profile before it goes live, and keeps checking that published work
+                        stays consistent with what customers report.
+                    </p>
+                    <h2>How we keep it trustworthy</h2>
+                    <ul class="tick-list">
+                        <li><i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+                            <span><strong>Reviewed profiles.</strong> A professional is only searchable after an
+                                administrator has approved their profile.</span></li>
+                        <li><i class="bi bi-cash-coin" aria-hidden="true"></i>
+                            <span><strong>Cash after the job.</strong> You agree the total before the work starts
+                                and pay the professional directly. We never handle your money.</span></li>
+                        <li><i class="bi bi-star-fill" aria-hidden="true"></i>
+                            <span><strong>Reviews from real bookings.</strong> Only customers who completed a booking
+                                can review it, once.</span></li>
+                        <li><i class="bi bi-calendar2-check" aria-hidden="true"></i>
+                            <span><strong>Real availability.</strong> Slots come from each professional's own working
+                                hours, so what you book is what they can do.</span></li>
+                    </ul>
+                </div>
+                <aside class="card card--pad about-side">
+                    <h2 class="about-side__title">At a glance</h2>
+                    <dl class="facts">
+                        <div><dt>Payment</dt><dd>Cash after the job</dd></div>
+                        <div><dt>Booking</dt><dd>Online, with live slots</dd></div>
+                        <div><dt>Fees</dt><dd>Platform fee shown before you confirm</dd></div>
+                        <div><dt>Reviews</dt><dd>One per completed booking</dd></div>
+                        <div><dt>Cancellation</dt><dd>Free until the cut-off</dd></div>
+                    </dl>
+                    <div class="about-side__actions">
+                        <a class="btn btn--primary btn--block" th:href="@{/services}">Browse services</a>
+                        <a class="btn btn--outline btn--block" th:href="@{/register(type='WORKER')}">Work with us</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h2>Built around four simple promises</h2>
+                    <p>The same rules apply to every category on the platform.</p>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card tone-orange">
+                    <span class="feature-card__icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <h3>One clear catalogue</h3>
+                    <p>Fixed prices per visit or per hour, published up front by the professional who will do the work.</p>
+                </div>
+                <div class="feature-card tone-blue">
+                    <span class="feature-card__icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                    <h3>Booking that sticks</h3>
+                    <p>A slot is held the moment you confirm, so two customers can never take the same hour.</p>
+                </div>
+                <div class="feature-card tone-green">
+                    <span class="feature-card__icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
+                    <h3>No online payment</h3>
+                    <p>There is no card form and no gateway. You pay the professional in cash once the job is done.</p>
+                </div>
+                <div class="feature-card tone-purple">
+                    <span class="feature-card__icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></span>
+                    <h3>Support when it matters</h3>
+                    <p>Something off? <a th:href="@{/contact}">Tell us</a> and we will look at the booking for you.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--soft">
+        <div class="container text-center">
+            <h2>Ready when you are</h2>
+            <p>Find a professional near you, or start earning as one.</p>
+            <div class="cta-row">
+                <a class="btn btn--primary btn--lg" th:href="@{/services}">Find a professional</a>
+                <a class="btn btn--outline btn--lg" th:href="@{/workers}">See who's available</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

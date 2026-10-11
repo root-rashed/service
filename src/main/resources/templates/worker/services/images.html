@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Service photos</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <script th:src="@{/js/media.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head page-head--row">
+                <div>
+                    <h1>Photos</h1>
+                    <p th:text="${service.title}">Service title</p>
+                </div>
+                <a class="btn btn--outline" th:href="@{/worker/services}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to services</a>
+            </div>
+
+            <form class="card card--pad upload-box" th:action="@{/worker/services/{id}/images(id=${service.id})}"
+                  method="post" enctype="multipart/form-data" data-loading-on-submit
+                  th:if="${service.images.size() < maxImages}">
+                <label class="form-label" for="files">Add photos</label>
+                <input class="form-control" type="file" id="files" name="files" multiple required
+                       accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-image-input>
+                <p class="form-hint">
+                    JPG, PNG or WEBP, up to 5 MB each. You can have up to <span th:text="${maxImages}">8</span> photos
+                    (<span th:text="${maxImages - service.images.size()}">8</span> more allowed).
+                    The first photo is shown on cards and in search results.
+                </p>
+                <div class="upload-preview" data-image-previews aria-live="polite"></div>
+                <button class="btn btn--primary" type="submit"><i class="bi bi-upload" aria-hidden="true"></i> Upload photos</button>
+            </form>
+            <div class="alert alert--info status-banner" th:unless="${service.images.size() < maxImages}">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span>You've reached the maximum of <span th:text="${maxImages}">8</span> photos. Delete one to add another.</span>
+            </div>
+
+            <h2 style="font-size: var(--fs-xl); margin: 2rem 0 1rem; letter-spacing: 0;">Your photos</h2>
+
+            <ul class="photo-grid" th:if="${!service.images.isEmpty()}">
+                <li class="photo-tile card" th:each="img, st : ${service.images}">
+                    <div class="photo-tile__media">
+                        <img th:src="@{${img.url}}" th:alt="${service.title} + ' photo ' + ${st.count}" loading="lazy">
+                        <span class="badge badge--orange photo-tile__badge" th:if="${st.first}">Main photo</span>
+                    </div>
+                    <div class="photo-tile__actions">
+                        <form th:action="@{/worker/services/{id}/images/{imageId}/move(id=${service.id}, imageId=${img.id})}" method="post" th:unless="${st.first}">
+                            <input type="hidden" name="direction" value="up">
+                            <button class="icon-btn" type="submit" aria-label="Move earlier"><i class="bi bi-arrow-left" aria-hidden="true"></i></button>
+                        </form>
+                        <form th:action="@{/worker/services/{id}/images/{imageId}/move(id=${service.id}, imageId=${img.id})}" method="post" th:unless="${st.last}">
+                            <input type="hidden" name="direction" value="down">
+                            <button class="icon-btn" type="submit" aria-label="Move later"><i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                        </form>
+                        <form th:action="@{/worker/services/{id}/images/{imageId}/primary(id=${service.id}, imageId=${img.id})}" method="post" th:unless="${st.first}">
+                            <button class="btn btn--ghost btn--sm" type="submit">Make main</button>
+                        </form>
+                        <form th:action="@{/worker/services/{id}/images/{imageId}/delete(id=${service.id}, imageId=${img.id})}" method="post"
+                              data-confirm="Delete this photo? This cannot be undone.">
+                            <button class="icon-btn" type="submit" aria-label="Delete photo"><i class="bi bi-trash" aria-hidden="true"></i></button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="empty-state" th:if="${service.images.isEmpty()}">
+                <i class="bi bi-images" aria-hidden="true"></i>
+                <h3>No photos yet</h3>
+                <p>Services with clear photos get noticed more. Upload your first photo above.</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

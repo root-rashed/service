@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My services</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head page-head--row">
+                <div>
+                    <h1>My services</h1>
+                    <p>Manage what customers can book from you.</p>
+                </div>
+                <a class="btn btn--primary" th:href="@{/worker/services/new}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add service</a>
+            </div>
+
+            <div class="alert alert--info status-banner" th:if="${profile == null}">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span>Create your <a th:href="@{/worker/profile}">professional profile</a> before adding services.</span>
+            </div>
+            <div class="alert alert--warning status-banner" th:if="${profile != null and !profile.verified}">
+                <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                <span>Your services will appear publicly once your <a th:href="@{/worker/profile}">profile</a> is approved.</span>
+            </div>
+
+            <ul class="manage-list" th:if="${!services.isEmpty()}">
+                <li class="card manage-item" th:each="service : ${services}">
+                    <div class="manage-item__main">
+                        <h2 class="manage-item__title">
+                            <span th:text="${service.title}">Service title</span>
+                            <th:block th:switch="${service.status.name()}">
+                                <span class="badge badge--green" th:case="'ACTIVE'">Active</span>
+                                <span class="badge" th:case="'INACTIVE'">Paused</span>
+                                <span class="badge badge--red" th:case="'SUSPENDED'">Suspended</span>
+                            </th:block>
+                        </h2>
+                        <p class="manage-item__meta">
+                            <span th:text="${service.categoryName}">Category</span>
+                            <span><strong>&#2547;<span th:text="${#numbers.formatInteger(service.price, 1, 'COMMA')}">800</span></strong>
+                                <span th:text="${service.priceUnit}">per service</span></span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i> <span th:text="${service.durationLabel}">1 hour</span></span>
+                            <span><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${service.location}">Mirpur</span></span>
+                        </p>
+                    </div>
+                    <div class="manage-item__actions">
+                        <a class="btn btn--outline btn--sm" th:href="@{/worker/services/{id}/edit(id=${service.id})}">Edit</a>
+                        <a class="btn btn--outline btn--sm" th:href="@{/worker/services/{id}/images(id=${service.id})}">
+                            <i class="bi bi-images" aria-hidden="true"></i> Photos (<span th:text="${service.images.size()}">0</span>)
+                        </a>
+                        <form th:if="${service.status.name() == 'ACTIVE'}" th:action="@{/worker/services/{id}/deactivate(id=${service.id})}" method="post">
+                            <button class="btn btn--ghost btn--sm" type="submit">Pause</button>
+                        </form>
+                        <form th:if="${service.status.name() == 'INACTIVE'}" th:action="@{/worker/services/{id}/activate(id=${service.id})}" method="post">
+                            <button class="btn btn--ghost btn--sm" type="submit">Activate</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="empty-state" th:if="${services.isEmpty()}">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                <h3>No services yet</h3>
+                <p>Add your first service with a clear price and description so customers can book you.</p>
+                <a class="btn btn--primary" th:href="@{/worker/services/new}">Add your first service</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

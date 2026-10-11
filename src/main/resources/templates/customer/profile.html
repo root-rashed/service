@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My profile</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <script th:src="@{/js/media.js}" defer></script>
+        <style>
+            /* ServiZone My profile — ReUI-style look. Every rule is scoped under .cp (the <main> class). */
+            .cp {
+                --c-fg: #0a0a0a;
+                --c-muted: #737373;
+                --c-border: #e5e5e5;
+                --c-hover: #f5f5f5;
+                --c-primary: #171717;
+                --c-danger: #dc2626;
+                --c-radius: 8px;
+                --c-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--c-fg);
+            }
+            .cp .section { background: transparent; }
+            .cp h1, .cp h2, .cp h3 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.01em;
+                color: var(--c-fg);
+            }
+            .cp p, .cp .page-head p { color: var(--c-muted); }
+            .cp .card {
+                background: #fff;
+                border: 1px solid var(--c-border);
+                border-radius: var(--c-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .cp .card:hover { transform: none; box-shadow: none; border-color: var(--c-border); }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .cp .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--c-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .cp .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .cp .btn:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+            .cp .btn--primary { background: var(--c-primary); border-color: var(--c-primary); color: #fff; }
+            .cp .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+            .cp .btn--outline { background: #fff; border-color: var(--c-border); color: var(--c-fg); }
+            .cp .btn--outline:hover { background: var(--c-hover); border-color: var(--c-border); color: var(--c-fg); }
+            .cp .btn--ghost { background: transparent; border-color: transparent; color: var(--c-fg); }
+            .cp .btn--ghost:hover { background: var(--c-hover); color: var(--c-fg); }
+
+            /* Form fields: 36px, 8px radius, thin border */
+            .cp .form-label { font-size: 14px; font-weight: 500; color: var(--c-fg); }
+            .cp .form-control {
+                height: 36px;
+                min-height: 36px;
+                padding-top: 0;
+                padding-bottom: 0;
+                font-family: inherit;
+                font-size: 14px;
+                color: var(--c-fg);
+                background-color: #fff;
+                border: 1px solid var(--c-border);
+                border-radius: var(--c-radius);
+                box-shadow: none;
+                outline: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .cp .form-control:focus {
+                border-color: #a3a3a3;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+            }
+            .cp .form-control:disabled {
+                color: var(--c-muted);
+                background-color: var(--c-hover);
+                cursor: not-allowed;
+            }
+            .cp .form-hint { color: var(--c-muted); font-size: 12px; }
+
+            /* Errors: red is allowed here */
+            .cp .form-error { color: var(--c-danger); font-size: 13px; }
+            .cp .has-error .form-control { border-color: var(--c-danger); }
+            .cp .has-error .form-control:focus {
+                border-color: var(--c-danger);
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="cp">
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>My profile</h1>
+                <p>Keep your details up to date so professionals can reach you.</p>
+            </div>
+
+            <div th:replace="~{fragments/profile-photo :: photoCard(${account}, '/customer/profile/photo', '/customer/profile/photo/remove')}"></div>
+
+            <form class="card card--pad" th:action="@{/customer/profile}" th:object="${profileForm}" method="post" data-loading-on-submit>
+                <p class="form-error" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+                <div class="form-field" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                    <label class="form-label" for="name">Full name</label>
+                    <input class="form-control" type="text" id="name" th:field="*{name}" autocomplete="name">
+                    <p class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" type="email" id="email" th:value="${account.email}" disabled>
+                        <p class="form-hint">Your email is your login and can't be changed here.</p>
+                    </div>
+                    <div class="form-field" th:classappend="${#fields.hasErrors('phone')} ? 'has-error'">
+                        <label class="form-label" for="phone">Phone</label>
+                        <input class="form-control" type="tel" id="phone" th:field="*{phone}" autocomplete="tel">
+                        <p class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn--primary" type="submit">Save changes</button>
+                    <a class="btn btn--ghost" th:href="@{/customer/dashboard}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

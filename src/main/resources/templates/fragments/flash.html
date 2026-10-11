@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* Renders flash messages. Controllers use RedirectAttributes: successMessage, errorMessage, infoMessage. */-->
+<div class="toast-container" aria-live="polite" th:fragment="flash">
+    <style>
+        /* ReUI-style look. Scoped under .toast-container. Red is used only for the error toast. */
+        .toast-container .toast {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+        .toast-container .toast > i { color: #737373; }
+        .toast-container .toast--error { border-color: #dc2626; }
+        .toast-container .toast--error > i { color: #dc2626; }
+        .toast-container .toast .toast__close {
+            color: #737373;
+            background: transparent;
+            border: 0;
+            border-radius: 8px;
+            box-shadow: none;
+            cursor: pointer;
+        }
+        .toast-container .toast .toast__close:hover { background: #f5f5f5; color: #0a0a0a; }
+        .toast-container .toast .toast__close:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+    </style>
+    <div class="toast toast--success" role="status" th:if="${successMessage}">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <span th:text="${successMessage}">Success</span>
+        <button class="toast__close" type="button" aria-label="Dismiss" data-toast-close>&times;</button>
+    </div>
+    <div class="toast toast--error" role="alert" th:if="${errorMessage}">
+        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+        <span th:text="${errorMessage}">Error</span>
+        <button class="toast__close" type="button" aria-label="Dismiss" data-toast-close>&times;</button>
+    </div>
+    <div class="toast toast--info" role="status" th:if="${infoMessage}">
+        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+        <span th:text="${infoMessage}">Info</span>
+        <button class="toast__close" type="button" aria-label="Dismiss" data-toast-close>&times;</button>
+    </div>
+</div>
+</body>
+</html>

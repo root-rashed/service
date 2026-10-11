@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'Frequently asked questions | ' + ${@environment.getProperty('app.name', 'ServiZone')}">FAQ</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="Answers about booking, cash payment, cancellation, professional verification, reviews and account security on ServiZone.">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone FAQ — ReUI-style look. Every rule is scoped under .fq (the <main> class). */
+            .fq {
+                --fq-fg: #0a0a0a;
+                --fq-muted: #737373;
+                --fq-border: #e5e5e5;
+                --fq-hover: #f5f5f5;
+                --fq-radius: 8px;
+                --fq-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--fq-fg);
+            }
+            .fq .section { background: transparent; }
+
+            /* Typography */
+            .fq h1,
+            .fq h2 {
+                font-family: inherit;
+                font-weight: 600;
+                color: var(--fq-fg);
+                letter-spacing: -.01em;
+            }
+            .fq p,
+            .fq .page-head p { color: var(--fq-muted); }
+            .fq strong { color: var(--fq-fg); font-weight: 600; }
+            .fq a {
+                color: var(--fq-fg);
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+            .fq a:hover { text-decoration-thickness: 2px; }
+
+            /* Group headings */
+            .fq .faq-group {
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--fq-fg);
+            }
+
+            /* Accordion items: 1px border, 12px radius, no shadow, no hover lift */
+            .fq .disclosure {
+                background: #fff;
+                border: 1px solid var(--fq-border);
+                border-radius: var(--fq-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .fq .disclosure:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: var(--fq-border);
+            }
+            .fq .disclosure[open] {
+                border-color: var(--fq-border);
+                box-shadow: none;
+            }
+            .fq .disclosure summary {
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--fq-fg);
+                cursor: pointer;
+            }
+            .fq .disclosure summary:hover { background-color: transparent; }
+            .fq .disclosure summary:focus-visible {
+                outline: 2px solid #171717;
+                outline-offset: 2px;
+                border-radius: var(--fq-radius);
+            }
+            .fq .disclosure p { font-size: 14px; color: var(--fq-muted); }
+
+            /* Info banner: neutral grey, no colour tint */
+            .fq .alert--info {
+                background: var(--fq-hover);
+                border: 1px solid var(--fq-border);
+                border-radius: var(--fq-radius-card);
+                box-shadow: none;
+                color: var(--fq-fg);
+            }
+            .fq .alert--info i { color: var(--fq-muted); }
+            .fq .alert--info span { color: var(--fq-fg); }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="fq">
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>Frequently asked questions</h1>
+                <p>The things customers and professionals ask us most. If your question isn't here,
+                    <a th:href="@{/contact}">send us a message</a>.</p>
+            </div>
+
+            <h2 class="faq-group">Booking</h2>
+            <details class="disclosure" open>
+                <summary>How do I book a professional?</summary>
+                <p class="mb-0">Open the service page, choose <strong>Book now</strong>, pick one of the available
+                    dates and start times, and confirm. The booking is held for you immediately and the
+                    professional is asked to confirm it.</p>
+            </details>
+            <details class="disclosure">
+                <summary>Can I book the same professional twice?</summary>
+                <p class="mb-0">Yes, as long as you finish cancelling or completing the earlier booking. A slot can
+                    only hold one active booking, so overlapping times are shown as unavailable.</p>
+            </details>
+            <details class="disclosure">
+                <summary>Why is a professional not in the search results?</summary>
+                <p class="mb-0">Every professional profile is reviewed by our team before it becomes searchable.
+                    A profile that is still under review, paused by the professional, or suspended by an
+                    administrator will not appear in search &mdash; even if you follow a direct link to it.</p>
+            </details>
+            <details class="disclosure">
+                <summary>How far ahead can I book?</summary>
+                <p class="mb-0">Bookings open up to 60 days ahead and same-day bookings need at least 2 hours'
+                    notice. Slots come from each professional's own working hours and blocked dates.</p>
+            </details>
+
+            <h2 class="faq-group">Payment</h2>
+            <details class="disclosure" open>
+                <summary>How do I pay?</summary>
+                <p class="mb-0"><strong>Cash only.</strong> There is no online payment on this platform and we never
+                    take card details. Agree the total before the work starts, then pay the professional in cash
+                    after the job is finished. The professional records the payment in the app, and you get a
+                    notification when they do.</p>
+            </details>
+            <details class="disclosure">
+                <summary>What is the platform fee?</summary>
+                <p class="mb-0">A small platform fee is added on top of the service price. It is shown in the
+                    checkout summary before you confirm, so the total is never a surprise.</p>
+            </details>
+            <details class="disclosure">
+                <summary>What if the professional asks for more money?</summary>
+                <p class="mb-0">Don't pay extra on the spot. <a th:href="@{/contact}">Report it</a> with the
+                    booking reference and we'll review the price that was agreed when you booked.</p>
+            </details>
+
+            <h2 class="faq-group">Changes and cancellations</h2>
+            <details class="disclosure" open>
+                <summary>Can I cancel a booking?</summary>
+                <p class="mb-0">Yes, for free, as long as the booking has not started and you cancel at least
+                    2 hours before the start time. Find the booking under
+                    <a th:href="@{/customer/bookings}">My bookings</a> and use <strong>Cancel booking</strong>.</p>
+            </details>
+            <details class="disclosure">
+                <summary>The professional declined &mdash; what now?</summary>
+                <p class="mb-0">The booking is closed and nothing is owed. Browse the service page for other
+                    available times, or pick a different professional.</p>
+            </details>
+            <details class="disclosure">
+                <summary>The professional did not show up</summary>
+                <p class="mb-0">Let us know through the booking page and <a th:href="@{/contact}">contact support</a>.
+                    We review the booking history before deciding what can be done.</p>
+            </details>
+
+            <h2 class="faq-group">Reviews</h2>
+            <details class="disclosure" open>
+                <summary>Can I review a booking?</summary>
+                <p class="mb-0">Yes &mdash; once the professional marks the job complete. One review per booking,
+                    and the rating feeds directly into the average shown on the service and the professional's
+                    profile.</p>
+            </details>
+            <details class="disclosure">
+                <summary>Can I edit or delete my review?</summary>
+                <p class="mb-0">Reviews are part of the job history, so they can't be deleted. Contact support if a
+                    review contains personal or inappropriate content and we'll review it.</p>
+            </details>
+
+            <h2 class="faq-group">Professionals</h2>
+            <details class="disclosure" open>
+                <summary>How do I start offering services?</summary>
+                <p class="mb-0"><a th:href="@{/register(type='WORKER')}">Register as a professional</a>, create your
+                    profile with your trade and working area, and add at least one service. We review the profile
+                    before it goes live.</p>
+            </details>
+            <details class="disclosure">
+                <summary>How do I set my working hours?</summary>
+                <p class="mb-0">Under <strong>Schedule</strong> in your dashboard you set your regular weekly hours
+                    and block individual dates when you're unavailable. Bookable slots are generated from those
+                    hours.</p>
+            </details>
+            <details class="disclosure">
+                <summary>When am I paid?</summary>
+                <p class="mb-0">In cash, by the customer, after the job. Once they have paid, confirm it on the
+                    booking so your records match &mdash; that's the only "payout" step.</p>
+            </details>
+
+            <h2 class="faq-group">Account and privacy</h2>
+            <details class="disclosure" open>
+                <summary>Do I need to verify my email?</summary>
+                <p class="mb-0">Yes. We send a 6-digit code when you register and you can't book or publish a
+                    profile until the address is verified.</p>
+            </details>
+            <details class="disclosure">
+                <summary>How do I protect my account?</summary>
+                <p class="mb-0">Use a unique password of at least 8 characters with a letter and a number. Repeated
+                    failed sign-ins lock the account temporarily, and you can reset your password from the login
+                    page with an emailed code.</p>
+            </details>
+            <details class="disclosure">
+                <summary>Who can see my phone number?</summary>
+                <p class="mb-0">Your number is never public. It is shown to a professional only for their own
+                    bookings, and only after the booking has been accepted.</p>
+            </details>
+
+            <div class="alert alert--info status-banner" style="margin-top: var(--space-6);">
+                <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
+                <span>Still stuck? <a th:href="@{/contact}">Send us the details</a> and we'll take a look.</span>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

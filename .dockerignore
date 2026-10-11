@@ -1,0 +1,22 @@
+# Keep the build context small and stop a local target/ or storage/ from being sent to the daemon.
+# The first matters on every build; the second matters because it can hold real uploads.
+
+target/
+storage/
+!.gitkeep
+
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+*.log
+.DS_Store
+
+.git/
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml

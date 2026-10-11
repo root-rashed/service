@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="${pageTitle}">Service</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1 th:text="${pageTitle}">Add a service</h1>
+                <p>Be specific about what you offer and what the price covers.</p>
+            </div>
+
+            <form class="card card--pad" th:action="@{${formAction}}" th:object="${serviceForm}" method="post" data-loading-on-submit>
+                <p class="form-error" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+                <div class="form-section">
+                    <h2>Service details</h2>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('categoryId')} ? 'has-error'">
+                        <label class="form-label" for="categoryId">Category</label>
+                        <select class="form-control" id="categoryId" th:field="*{categoryId}">
+                            <option value="">Choose a category</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}">Category</option>
+                        </select>
+                        <p class="form-error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('title')} ? 'has-error'">
+                        <label class="form-label" for="title">Title</label>
+                        <input class="form-control" type="text" id="title" th:field="*{title}" placeholder="e.g. Professional Home Plumbing">
+                        <p class="form-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('description')} ? 'has-error'">
+                        <label class="form-label" for="description">Description</label>
+                        <textarea class="form-control" id="description" rows="5" th:field="*{description}"
+                                  placeholder="Explain what you do, how you work and what customers can expect."></textarea>
+                        <p class="form-hint" th:unless="${#fields.hasErrors('description')}">30 to 2000 characters.</p>
+                        <p class="form-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('includesText')} ? 'has-error'">
+                        <label class="form-label" for="includesText">What's included <span class="text-muted">(optional)</span></label>
+                        <textarea class="form-control" id="includesText" rows="4" th:field="*{includesText}"
+                                  placeholder="Inspection of the problem&#10;All standard tools and fittings&#10;Cleanup after the job"></textarea>
+                        <p class="form-hint" th:unless="${#fields.hasErrors('includesText')}">One item per line, up to 10.</p>
+                        <p class="form-error" th:if="${#fields.hasErrors('includesText')}" th:errors="*{includesText}"></p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Price and time</h2>
+
+                    <div class="form-row">
+                        <div class="form-field" th:classappend="${#fields.hasErrors('price')} ? 'has-error'">
+                            <label class="form-label" for="price">Price</label>
+                            <div class="money-input">
+                                <span aria-hidden="true">&#2547;</span>
+                                <input class="form-control" type="number" step="0.01" min="1" id="price" th:field="*{price}" placeholder="800">
+                            </div>
+                            <p class="form-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+                        </div>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('priceType')} ? 'has-error'">
+                            <label class="form-label" for="priceType">Price type</label>
+                            <select class="form-control" id="priceType" th:field="*{priceType}">
+                                <option th:each="t : ${priceTypes}" th:value="${t}" th:text="${t.label}">Fixed price</option>
+                            </select>
+                            <p class="form-error" th:if="${#fields.hasErrors('priceType')}" th:errors="*{priceType}"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('durationMinutes')} ? 'has-error'">
+                        <label class="form-label" for="durationMinutes">Typical duration (minutes)</label>
+                        <input class="form-control" type="number" min="15" max="720" step="5" id="durationMinutes" th:field="*{durationMinutes}">
+                        <p class="form-hint" th:unless="${#fields.hasErrors('durationMinutes')}">Used to calculate available time slots, for example 120 for 2 hours.</p>
+                        <p class="form-error" th:if="${#fields.hasErrors('durationMinutes')}" th:errors="*{durationMinutes}"></p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Where you work</h2>
+
+                    <div class="form-row">
+                        <div class="form-field" th:classappend="${#fields.hasErrors('serviceArea')} ? 'has-error'">
+                            <label class="form-label" for="serviceArea">Service area</label>
+                            <input class="form-control" type="text" id="serviceArea" th:field="*{serviceArea}" placeholder="e.g. Mirpur and nearby">
+                            <p class="form-error" th:if="${#fields.hasErrors('serviceArea')}" th:errors="*{serviceArea}"></p>
+                        </div>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('serviceRadiusKm')} ? 'has-error'">
+                            <label class="form-label" for="serviceRadiusKm">Service radius (km)</label>
+                            <input class="form-control" type="number" min="1" max="100" id="serviceRadiusKm" th:field="*{serviceRadiusKm}">
+                            <p class="form-error" th:if="${#fields.hasErrors('serviceRadiusKm')}" th:errors="*{serviceRadiusKm}"></p>
+                        </div>
+                    </div>
+
+                    <details class="disclosure" th:open="${#fields.hasErrors('latitude') or #fields.hasErrors('longitude') or serviceForm.latitude != null}">
+                        <summary>Map position (optional)</summary>
+                        <p class="form-hint" style="margin-bottom: 1rem;">Adding coordinates lets customers find this service with "near me" searches.</p>
+                        <div class="form-row">
+                            <div class="form-field" th:classappend="${#fields.hasErrors('latitude')} ? 'has-error'">
+                                <label class="form-label" for="latitude">Latitude</label>
+                                <input class="form-control" type="number" step="any" id="latitude" th:field="*{latitude}" placeholder="23.8103">
+                                <p class="form-error" th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}"></p>
+                            </div>
+                            <div class="form-field" th:classappend="${#fields.hasErrors('longitude')} ? 'has-error'">
+                                <label class="form-label" for="longitude">Longitude</label>
+                                <input class="form-control" type="number" step="any" id="longitude" th:field="*{longitude}" placeholder="90.4125">
+                                <p class="form-error" th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}"></p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn--primary" type="submit" th:text="${submitLabel}">Publish service</button>
+                    <a class="btn btn--ghost" th:href="@{/worker/services}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

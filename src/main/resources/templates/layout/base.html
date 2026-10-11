@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content, extraHead)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1f3a">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <!-- Tell scripts who is looking at the page (used by the favorites hearts). -->
+    <meta name="app-user" content="customer" sec:authorize="hasRole('CUSTOMER')">
+    <meta name="app-user" content="other" sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')">
+    <meta name="app-login" th:content="@{/login}">
+    <meta name="app-favorites" th:content="@{/api/favorites}">
+
+    <title th:replace="${title}">Page title</title>
+
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+    <script th:src="@{/js/app.js}" defer></script>
+    <script th:src="@{/js/favorites.js}" defer></script>
+
+    <th:block th:replace="${extraHead}"></th:block>
+</head>
+<body>
+<!--/*
+    HOW TO USE THIS LAYOUT IN A PAGE
+    <!DOCTYPE html>
+    <html lang="en" xmlns:th="http://www.thymeleaf.org"
+          th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+    <head>
+        <title>My page</title>
+        <th:block th:fragment="extraHead"> ...page-specific <link>/<meta>/<script defer> ... </th:block>
+    </head>
+    <body><main> ... </main></body>
+    </html>
+    Pass ~{} as the third argument if the page has no extra head content.
+    Controllers may set the model attribute "activeNav" (home, services, professionals, about) to highlight the nav.
+*/-->
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/flash :: flash}"></div>
+<div id="main-content" tabindex="-1">
+    <th:block th:replace="${content}"></th:block>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

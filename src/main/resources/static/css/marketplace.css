@@ -1,0 +1,194 @@
+/* Shared marketplace components: category tiles, service cards, worker cards, review cards, feature cards. */
+
+/* Colour tones used by icons, tiles and avatars */
+.tone-orange { --tone-bg: #fff0e6; --tone-fg: #f2641d; }
+.tone-pink   { --tone-bg: #fde8f3; --tone-fg: #d6338a; }
+.tone-blue   { --tone-bg: #e6f2ff; --tone-fg: #1f6feb; }
+.tone-purple { --tone-bg: #f0e9ff; --tone-fg: #7c3aed; }
+.tone-green  { --tone-bg: #e3f7ec; --tone-fg: #15a34a; }
+.tone-indigo { --tone-bg: #eaecff; --tone-fg: #4f46e5; }
+.tone-rose   { --tone-bg: #ffe8ee; --tone-fg: #e11d48; }
+.tone-sky    { --tone-bg: #e6f6fd; --tone-fg: #0ea5e9; }
+
+/* Category tiles */
+/*
+   Category tiles.
+
+   The column count is driven by the breakpoint, not by auto-fill: auto-fill at this
+   width produced 7 columns for 8 categories and left "More" orphaned on its own row.
+   Four columns keeps 8 categories as 2 full rows from 1440px down to 600px, and the
+   tiles get roughly twice as wide as the old auto-fill produced. Below that, 2 columns.
+*/
+.category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+@media (max-width: 900px) { .category-grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-3); } }
+@media (max-width: 600px) { .category-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+
+  /* Increase card size */
+  width: 180px;
+  min-height: 200px;
+  padding: 30px 20px;
+  box-sizing: border-box;
+
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  transition: box-shadow var(--transition-slow),
+  border-color var(--transition-slow),
+  transform var(--transition-slow);
+  cursor: pointer;
+}
+
+.category-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); transform: translateY(-3px); }
+/* The icon leads the lift so the tile feels like it responds, not just shifts. */
+.category-card__icon {
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--radius-lg);
+  background: var(--tone-bg); color: var(--tone-fg); font-size: 1.5rem; margin-bottom: var(--space-1);
+  transition: transform var(--transition-spring), border-radius var(--transition-slow);
+}
+.category-card:hover .category-card__icon { transform: scale(1.08) rotate(-4deg); border-radius: 50%; }
+.category-card h3 { margin: 0; font-size: var(--fs-sm); letter-spacing: 0; }
+.category-card p { margin: 0; font-size: var(--fs-xs); color: var(--text-muted); line-height: 1.45; }
+
+/* Service cards */
+.service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-5); }
+.service-card {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-slow), border-color var(--transition-slow), transform var(--transition-slow);
+  cursor: pointer;
+}
+.service-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); transform: translateY(-3px); }
+.service-card:focus-within { box-shadow: var(--shadow-lg); border-color: var(--orange-300); }
+.service-card__media img { transition: transform var(--transition-spring); }
+.service-card:hover .service-card__media img { transform: scale(1.05); }
+.service-card__media {
+  position: relative; display: grid; place-items: center; height: 150px;
+  background: var(--tone-bg); color: var(--tone-fg); font-size: 3.5rem;
+}
+.service-card__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.service-card__badge { position: absolute; left: 10px; bottom: 10px; }
+/* 40px hit area; icon visually centered via line-height. */
+.fav-btn {
+  position: absolute; z-index: 2; inset: 8px; display: grid; place-items: center;
+  width: 40px; height: 40px; border-radius: 12px; background: transparent; color: var(--orange-600);
+  box-shadow: var(--shadow-sm); font-size: 1.15rem; line-height: 1;
+  transition: background-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+.fav-btn:hover { background:transparent; color: var(--orange-700); transform: scale(1.06); }
+.fav-btn:active { transform: scale(0.96); }
+.service-card__body { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4) var(--space-4) var(--space-5); }
+.service-card__title { margin: 0; font-size: var(--fs-base); letter-spacing: 0; }
+
+/*
+   Sparse results.
+
+   With auto-fill and only one or two cards, the grid kept full 4-column width and the
+   cards sat in the left quarter of the page with a large dead zone beside them. These
+   rules let a short row breathe instead: a lone card is centred at a readable width,
+   and two cards share the row evenly instead of each hugging the left edge.
+*/
+.service-grid:has(> :only-child),
+.worker-grid:has(> :only-child) { grid-template-columns: minmax(0, 380px); justify-content: center; }
+.service-grid:has(> :first-child:nth-last-child(2)),
+.worker-grid:has(> :first-child:nth-last-child(2)) { grid-template-columns: repeat(2, minmax(0, 420px)); justify-content: center; }
+@media (max-width: 900px) {
+  /* Two centred columns would still overflow narrow screens. */
+  .service-grid:has(> :only-child), .worker-grid:has(> :only-child) { grid-template-columns: minmax(0, 420px); }
+  .service-grid:has(> :first-child:nth-last-child(2)), .worker-grid:has(> :first-child:nth-last-child(2)) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.service-card__title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.service-card__category { margin: 0; font-size: var(--fs-xs); color: var(--text-subtle); }
+.service-card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); margin-top: var(--space-1); }
+.service-card__location { font-size: var(--fs-xs); color: var(--text-subtle); }
+.service-card__price { margin: var(--space-2) 0 0; }
+
+/* Worker cards */
+.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-5); }
+.worker-card {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+
+  /* Increase card size */
+  width: 100%;
+  min-height: 250px;
+  padding: 30px 24px;
+  box-sizing: border-box;
+
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  transition: box-shadow var(--transition-slow),
+  border-color var(--transition-slow),
+  transform var(--transition-slow);
+
+  cursor: pointer;
+}
+.worker-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); transform: translateY(-3px); }
+.worker-card:focus-within { box-shadow: var(--shadow-lg); border-color: var(--orange-300); }
+.worker-card__avatar {
+  display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%;
+  background: var(--tone-bg); color: var(--tone-fg); font-size: 1.75rem; font-weight: 800; margin-bottom: var(--space-2);
+}
+.worker-card__name { margin: 0; font-size: var(--fs-lg); letter-spacing: 0; }
+.worker-card__name a::after { content: ""; position: absolute; inset: 0; }
+.worker-card__role { margin: 0 0 var(--space-2); font-size: var(--fs-sm); }
+.worker-card__meta { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-1) var(--space-3); margin-top: var(--space-3); font-size: var(--fs-xs); color: var(--text-subtle); }
+
+/* Review cards */
+.review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-5); }
+.review-card {
+  display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5);
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-slow), transform var(--transition-slow);
+}
+.review-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.review-card__stars { color: var(--amber-500); letter-spacing: 2px; }
+.review-card__text { flex: 1; margin: 0; color: var(--navy-900); }
+.review-card__author { display: flex; align-items: center; gap: var(--space-3); }
+.review-card__author strong { display: block; font-size: var(--fs-sm); }
+.review-card__author span:not(.avatar) { font-size: var(--fs-xs); color: var(--text-subtle); }
+
+/* Feature cards ("Why choose us") - the four share the card language above. */
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-5); }
+.feature-card {
+  padding: var(--space-5); background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-slow), border-color var(--transition-slow), transform var(--transition-slow);
+}
+.feature-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); transform: translateY(-3px); }
+.feature-card__icon {
+  display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: var(--space-4);
+  border-radius: var(--radius-md); background: var(--tone-bg); color: var(--tone-fg); font-size: 1.35rem;
+  transition: transform var(--transition-spring);
+}
+.feature-card:hover .feature-card__icon { transform: scale(1.06); }
+.feature-card h3 { font-size: var(--fs-lg); margin-bottom: var(--space-2); letter-spacing: 0; }
+.feature-card p { margin: 0; font-size: var(--fs-sm); }
+
+/* Avatars with photos */
+.worker-card__avatar, .worker-summary__avatar { overflow: hidden; }
+.worker-card__avatar img, .worker-summary__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Heart buttons (service cards and detail page) */
+button.fav-btn { border: 0; cursor: pointer; font: inherit; }
+.fav-btn.is-active { background: var(--orange-50); }
+.fav-btn:disabled { cursor: progress; opacity: 0.7; }
+.btn[data-favorite].is-active { border-color: var(--orange-500); color: var(--orange-600); }
+.btn[data-favorite].is-active i { color: var(--orange-500); }

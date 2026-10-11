@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="footer">
+    <style>
+        /* ServiZone footer — ReUI-style. Scoped under .site-footer so it overrides main.css without touching other pages. */
+        .site-footer {
+            --f-fg: #0a0a0a;
+            --f-muted: #737373;
+            --f-border: #e5e5e5;
+            padding-top: 48px;
+            background: #fff;
+            border-top: 1px solid var(--f-border);
+            color: var(--f-muted);
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .site-footer::before { display: none; }
+        .site-footer a:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #171717; }
+
+        .site-footer .site-footer__grid { gap: 32px 24px; padding-bottom: 40px; }
+
+        .site-footer .brand { gap: 10px; }
+        .site-footer .brand img { width: 30px; height: 30px; }
+        .site-footer .brand__name {
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -.02em;
+            color: var(--f-fg);
+        }
+        .site-footer p { font-size: 14px; line-height: 1.6; color: var(--f-muted); }
+
+        .site-footer h4 {
+            margin-bottom: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--f-fg);
+        }
+        .site-footer li + li { margin-top: 0; }
+        .site-footer .site-footer__links a {
+            min-height: 32px;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--f-muted);
+        }
+        .site-footer .site-footer__links a:hover { color: var(--f-fg); transform: none; }
+
+        .site-footer .site-footer__bottom {
+            justify-content: flex-start;
+            padding-block: 20px;
+            border-top: 1px solid var(--f-border);
+            font-size: 13px;
+            text-align: left;
+            color: var(--f-muted);
+        }
+    </style>
+
+    <!--    <section class="trust-strip" aria-label="Why customers trust us">-->
+    <!--        <div class="container trust-strip__inner">-->
+    <!--            <span class="trust-strip__item"><i class="bi bi-cash-coin" aria-hidden="true"></i> Pay with cash after the service</span>-->
+    <!--            <span class="trust-strip__item"><i class="bi bi-patch-check" aria-hidden="true"></i> Verified professionals</span>-->
+    <!--            <span class="trust-strip__item"><i class="bi bi-calendar2-check" aria-hidden="true"></i> Easy online booking</span>-->
+    <!--            <span class="trust-strip__item"><i class="bi bi-headset" aria-hidden="true"></i> Customer support</span>-->
+    <!--        </div>-->
+    <!--    </section>-->
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="site-footer__grid">
+                <div class="site-footer__about">
+                    <a class="brand" th:href="@{/}">
+                        <img th:src="@{/images/logo.svg}" alt="" width="36" height="36">
+                        <span class="brand__name" th:text="${@environment.getProperty('app.name', 'ServiZone')}">ServiZone</span>
+                    </a>
+                    <p>
+                        Book trusted local professionals for home services, repairs, beauty, tutoring and more.
+                    </p>
+                </div>
+                <div>
+                    <h4>Services</h4>
+                    <ul class="site-footer__links">
+                        <li><a th:href="@{/services}">Browse all services</a></li>
+                        <li><a th:href="@{/categories}">Categories</a></li>
+                        <li><a th:href="@{/workers}">Find professionals</a></li>
+                        <li><a th:href="@{/search}">Search</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Company</h4>
+                    <ul class="site-footer__links">
+                        <li><a th:href="@{/about}">About</a></li>
+                        <li><a th:href="@{/#how-it-works}">How it works</a></li>
+                        <li><a th:href="@{/faq}">FAQ</a></li>
+                        <li><a th:href="@{/contact}">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>For professionals</h4>
+                    <ul class="site-footer__links">
+                        <li><a th:href="@{/register(type='WORKER')}">Become a professional</a></li>
+                        <li><a th:href="@{/login}">Professional login</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="site-footer__bottom">
+                <span>&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span>
+                    <span  th:text="${@environment.getProperty('app.name', 'ServiZone')}">ServiZone</span>. All rights reserved.</span>
+            </div>
+
+        </div>
+    </footer>
+</th:block>
+</body>
+</html>

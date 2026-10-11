@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My dashboard</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Welcome back, <span th:text="${#strings.substringBefore(account.name + ' ', ' ')}">there</span></h1>
+                <p>Find a professional, track your bookings and manage your account.</p>
+            </div>
+
+            <div class="quick-links">
+                <a class="quick-link card card--interactive" th:href="@{/services}">
+                    <span class="quick-link__icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <span><strong>Browse services</strong><small>Compare prices and ratings</small></span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/customer/bookings}">
+                    <span class="quick-link__icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                    <span><strong>My bookings</strong><small>Requests and history</small></span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/favorites}">
+                    <span class="quick-link__icon"><i class="bi bi-heart" aria-hidden="true"></i></span>
+                    <span>
+                        <strong>Saved services</strong>
+                        <small>
+                            <span th:if="${savedServices.isEmpty()}">Your shortlist</span>
+                            <span th:unless="${savedServices.isEmpty()}"
+                                  th:text="${savedServices.size()} + ' of your shortlist'">Shortlist</span>
+                        </small>
+                    </span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/customer/profile}">
+                    <span class="quick-link__icon"><i class="bi bi-person" aria-hidden="true"></i></span>
+                    <span><strong>My profile</strong><small>Photo, name and phone</small></span>
+                </a>
+            </div>
+
+            <div class="dash-grid">
+                <!--/* Upcoming booking: the one thing a customer most often comes back for. */-->
+                <section class="card card--pad dash-card" aria-labelledby="upcoming-title">
+                    <h2 id="upcoming-title">Upcoming booking</h2>
+                    <a class="mini-booking" th:if="${bookings.upcoming != null}"
+                       th:href="@{/booking/{id}(id=${bookings.upcoming.id})}">
+                        <strong th:text="${bookings.upcoming.serviceTitle}">Service</strong>
+                        <small>with <span th:text="${bookings.upcoming.workerName}">Worker</span></small>
+                        <div class="mini-booking__row">
+                            <span>
+                                <span th:text="${bookings.upcoming.dateLabel}">date</span> &middot;
+                                <span th:text="${bookings.upcoming.timeLabel}">time</span>
+                            </span>
+                            <span class="badge" th:classappend="'badge--' + ${bookings.upcoming.statusTone}"
+                                  th:text="${bookings.upcoming.statusLabel}">Status</span>
+                        </div>
+                    </a>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${bookings.upcoming == null}">
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        <h3>No upcoming bookings</h3>
+                        <p>Book a professional and it will show up here.</p>
+                        <a class="btn btn--primary btn--sm" th:href="@{/services}">Browse services</a>
+                    </div>
+                </section>
+
+                <!--/* Saved services: a shortlist the customer can pick up where they left off. */-->
+                <section class="card card--pad dash-card" aria-labelledby="saved-title">
+                    <h2 id="saved-title">Saved services</h2>
+                    <th:block th:if="${!savedServices.isEmpty()}">
+                        <a class="mini-booking" th:each="s : ${savedServices}"
+                           th:href="@{/services/{slug}(slug=${s.slug})}">
+                            <strong th:text="${s.title}">Service</strong>
+                            <small>
+                                <span th:text="${s.categoryName}">Category</span>
+                                &middot; &#2547;<span th:text="${#numbers.formatInteger(s.price, 1, 'COMMA')}">1,200</span>
+                            </small>
+                            <div class="mini-booking__row">
+                                <span th:if="${s.reviewCount > 0}">
+                                    <i class="bi bi-star-fill" aria-hidden="true" style="color: var(--amber-500);"></i>
+                                    <span th:text="${#numbers.formatDecimal(s.rating, 1, 1)}">4.9</span>
+                                    <small th:text="'(' + ${s.reviewCount} + ')'">(12)</small>
+                                </span>
+                                <span class="badge badge--orange-soft" th:if="${s.reviewCount == 0}">New</span>
+                            </div>
+                        </a>
+                        <p style="margin: 1rem 0 0;"><a class="auth-link" th:href="@{/favorites}">See your shortlist</a></p>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${savedServices.isEmpty()}">
+                        <i class="bi bi-heart" aria-hidden="true"></i>
+                        <h3>Nothing saved yet</h3>
+                        <p>Tap the heart on any service to keep it here for later.</p>
+                        <a class="btn btn--primary btn--sm" th:href="@{/services}">Find a service</a>
+                    </div>
+                </section>
+
+                <!--/* Recent bookings. */-->
+                <section class="card card--pad dash-card" aria-labelledby="recent-title">
+                    <h2 id="recent-title">Recent bookings</h2>
+                    <th:block th:if="${!bookings.recent.isEmpty()}">
+                        <a class="mini-booking" th:each="b : ${bookings.recent}" th:href="@{/booking/{id}(id=${b.id})}">
+                            <strong th:text="${b.serviceTitle}">Service</strong>
+                            <div class="mini-booking__row">
+                                <small th:text="${b.dateLabel}">date</small>
+                                <span class="badge" th:classappend="'badge--' + ${b.statusTone}"
+                                      th:text="${b.statusLabel}">Status</span>
+                            </div>
+                        </a>
+                        <p style="margin: 1rem 0 0;"><a class="auth-link" th:href="@{/customer/bookings}">See all bookings</a></p>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${bookings.recent.isEmpty()}">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <h3>No bookings yet</h3>
+                        <p>Your booking history will appear here.</p>
+                    </div>
+                </section>
+
+                <!--/* Messages: booking state changes land here rather than only in email. */-->
+                <section class="card card--pad dash-card" aria-labelledby="messages-title">
+                    <div class="page-head--row" style="margin-bottom: var(--space-4);">
+                        <h2 id="messages-title" style="margin: 0;">
+                            Messages
+                            <span class="badge badge--orange" th:if="${unreadNotifications > 0}"
+                                  th:text="${unreadNotifications}">0</span>
+                        </h2>
+                        <a class="auth-link" th:href="@{/notifications}">See all</a>
+                    </div>
+                    <th:block th:if="${!notifications.isEmpty()}">
+                        <a class="mini-booking" th:each="n : ${notifications}" th:href="${n.link}"
+                           th:classappend="${!n.read} ? 'is-unread'">
+                            <strong th:text="${n.title}">Update</strong>
+                            <small th:text="${n.message}">Message</small>
+                            <div class="mini-booking__row">
+                                <span class="badge" th:classappend="'badge--' + ${n.tone}"
+                                      th:text="${n.type}">TYPE</span>
+                                <small th:text="${n.ageLabel}">age</small>
+                            </div>
+                        </a>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${notifications.isEmpty()}">
+                        <i class="bi bi-bell" aria-hidden="true"></i>
+                        <h3>No messages</h3>
+                        <p>Booking updates and confirmations will appear here.</p>
+                    </div>
+                </section>
+
+                <!--/* Reviews this customer wrote, so they can see what they have shared. */-->
+                <section class="card card--pad dash-card" aria-labelledby="reviews-title">
+                    <h2 id="reviews-title">Your reviews</h2>
+                    <th:block th:if="${!recentReviews.isEmpty()}">
+                        <div class="mini-booking" th:each="r : ${recentReviews}">
+                            <div class="review-card__stars" th:attr="aria-label=${r.rating + ' out of 5 stars'}" role="img">
+                                <i class="bi" th:each="n : ${#numbers.sequence(1, 5)}"
+                                   th:classappend="${n <= r.rating} ? 'bi-star-fill' : 'bi-star'"
+                                   aria-hidden="true"></i>
+                            </div>
+                            <strong th:text="${r.serviceTitle}">Service</strong>
+                            <p class="prose" style="margin: var(--space-2) 0 0;" th:text="${r.comment}">Comment</p>
+                            <div class="mini-booking__row">
+                                <small th:text="${r.dateLabel}">date</small>
+                                <a class="auth-link" th:if="${r.serviceSlug != null}"
+                                   th:href="@{/services/{slug}(slug=${r.serviceSlug})}">View service</a>
+                            </div>
+                        </div>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${recentReviews.isEmpty()}">
+                        <i class="bi bi-star" aria-hidden="true"></i>
+                        <h3>No reviews yet</h3>
+                        <p>After a job is completed you can rate the professional.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

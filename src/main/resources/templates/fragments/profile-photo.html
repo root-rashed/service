@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/*
+    Usage: <div th:replace="~{fragments/profile-photo :: photoCard(${account}, '/customer/profile/photo', '/customer/profile/photo/remove')}"></div>
+    "account" is an AccountProfileDto. Pages using this fragment should also load /js/media.js (confirm dialog).
+*/-->
+<section class="card card--pad photo-card" th:fragment="photoCard(account, uploadUrl, removeUrl)" aria-labelledby="photo-title">
+    <style>
+        /* ReUI-style look. Scoped under .photo-card. Red is used only for the destructive remove action. */
+        .photo-card {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+            transition: none;
+        }
+        .photo-card:hover { transform: none; box-shadow: none; }
+        .photo-card h2 { font-weight: 600; letter-spacing: -.01em; color: #0a0a0a; }
+        .photo-card .form-hint { color: #737373; }
+        .photo-card .avatar {
+            background: #f5f5f5;
+            color: #404040;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+        }
+        .photo-card .form-control {
+            height: 36px;
+            min-height: 36px;
+            padding-top: 0;
+            padding-bottom: 0;
+            font-family: inherit;
+            font-size: 14px;
+            color: #0a0a0a;
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: none;
+            outline: none;
+        }
+        .photo-card .form-control:focus {
+            border-color: #a3a3a3;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+        }
+        .photo-card .form-control::file-selector-button {
+            height: 100%;
+            margin-right: 10px;
+            padding: 0 12px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            color: #0a0a0a;
+            background: #f5f5f5;
+            border: 0;
+            border-right: 1px solid #e5e5e5;
+            cursor: pointer;
+        }
+        .photo-card .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 36px;
+            min-height: 36px;
+            padding: 0 14px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            transform: none;
+            transition: background-color .15s, border-color .15s;
+        }
+        .photo-card .btn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+        .photo-card .btn--primary { background: #171717; border-color: #171717; color: #fff; }
+        .photo-card .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+        .photo-card .btn--ghost { background: transparent; border-color: transparent; color: #dc2626; }
+        .photo-card .btn--ghost:hover { background: #f5f5f5; color: #dc2626; }
+    </style>
+    <span class="avatar avatar--xl" aria-hidden="true">
+        <img th:if="${account.profileImageUrl != null}" th:src="@{${account.profileImageUrl}}" alt="">
+        <th:block th:unless="${account.profileImageUrl != null}"
+                  th:text="${#strings.toUpperCase(#strings.substring(account.name, 0, 1))}">U</th:block>
+    </span>
+    <div class="photo-card__body">
+        <h2 id="photo-title">Profile photo</h2>
+        <p class="form-hint" style="margin-bottom: 0.75rem;">JPG, PNG or WEBP, up to 5 MB. A square photo works best.</p>
+        <form class="photo-card__form" th:action="@{${uploadUrl}}" method="post" enctype="multipart/form-data" data-loading-on-submit>
+            <input class="form-control" type="file" name="photo" required aria-label="Choose a profile photo"
+                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+            <button class="btn btn--primary btn--sm" type="submit">Upload</button>
+        </form>
+        <form th:if="${account.profileImageUrl != null}" th:action="@{${removeUrl}}" method="post"
+              data-confirm="Remove your profile photo?">
+            <button class="btn btn--ghost btn--sm" type="submit">Remove photo</button>
+        </form>
+    </div>
+</section>
+</body>
+</html>

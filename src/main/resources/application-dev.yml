@@ -1,0 +1,13 @@
+spring:
+  thymeleaf:
+    cache: false
+
+server:
+  error:
+    include-message: always
+    include-stacktrace: on_param
+
+logging:
+  level:
+    root: INFO
+    com.example.marketplace: DEBUG

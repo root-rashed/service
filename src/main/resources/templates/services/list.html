@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="${criteria.q != null and !criteria.q.isEmpty()}
+        ? ${criteria.q + ' - Services | ' + @environment.getProperty('app.name', 'ServiZone')}
+        : ${'Browse services | ' + @environment.getProperty('app.name', 'ServiZone')}">Services</title>
+    <th:block th:fragment="extraHead">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/services.css}">
+        <style>
+            /* ServiZone — ReUI-style. Scoped so nothing outside this page is affected. */
+            .sv {
+                --sv-fg: #0a0a0a; --sv-muted: #737373; --sv-border: #e5e5e5; --sv-border-strong: #d4d4d4;
+                --sv-soft: #fafafa; --sv-hover: #f5f5f5; --sv-ink: #171717; --sv-radius: 8px; --sv-radius-lg: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--sv-fg);
+            }
+            .sv h1, .sv h2, .sv h3, .sv h4 { font-family: inherit; font-weight: 600; letter-spacing: -.02em; color: var(--sv-fg); }
+            .sv p { color: var(--sv-muted); }
+            .sv :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sv-ink); }
+            .sv .text-muted { color: var(--sv-muted); }
+
+            /* Buttons */
+            .sv .btn {
+                min-height: 36px; padding: 0 14px; font-size: 14px; font-weight: 500;
+                border-width: 1px; border-radius: var(--sv-radius); box-shadow: none;
+            }
+            .sv .btn--sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+            .sv .btn--lg { min-height: 40px; padding: 0 20px; font-size: 14px; }
+            .sv .btn--primary { background: var(--sv-ink); border-color: var(--sv-ink); color: #fff; }
+            .sv .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+            .sv .btn--outline { background: #fff; border-color: var(--sv-border); color: var(--sv-fg); }
+            .sv .btn--outline:hover { background: var(--sv-hover); border-color: var(--sv-border-strong); box-shadow: none; }
+            .sv .btn--ghost { background: transparent; border-color: transparent; color: var(--sv-muted); }
+            .sv .btn--ghost:hover { background: var(--sv-hover); color: var(--sv-fg); }
+            .sv .btn[data-favorite].is-active { border-color: #dc2626; color: #dc2626; }
+            .sv .btn[data-favorite].is-active i { color: #dc2626; }
+
+            /* Forms */
+            .sv .form-field { margin-bottom: 14px; }
+            .sv .form-label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--sv-fg); }
+            .sv .form-control {
+                display: block; width: 100%; min-height: 36px; padding: 0 12px;
+                font: inherit; font-size: 14px; color: var(--sv-fg); background: #fff;
+                border: 1px solid var(--sv-border); border-radius: var(--sv-radius); box-shadow: none; outline: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .sv .form-control--sm { min-height: 32px; width: auto; font-size: 13px; }
+            .sv .form-control::placeholder { color: #a3a3a3; }
+            .sv .form-control:focus { border-color: #a3a3a3; box-shadow: 0 0 0 3px rgba(0, 0, 0, .06); }
+            .sv .form-hint { font-size: 13px; color: var(--sv-muted); }
+
+            /* Badges */
+            .sv .badge {
+                display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px;
+                font-size: 12px; font-weight: 500; white-space: nowrap; color: #404040; text-decoration: none;
+                background: var(--sv-hover); border: 1px solid var(--sv-border); border-radius: 999px;
+            }
+            .sv .badge--orange-soft, .sv .badge--orange { background: var(--sv-hover); border-color: var(--sv-border); color: #404040; }
+            .sv a.badge--orange-soft:hover { background: var(--sv-border); color: var(--sv-fg); }
+            .sv .badge--green { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+
+            /* Cards */
+            .sv .card {
+                background: #fff; border: 1px solid var(--sv-border); border-radius: var(--sv-radius-lg);
+                box-shadow: none;
+            }
+            .sv .card--pad { padding: 20px; }
+
+            /* Service cards (shared fragment) */
+            .sv .service-card { background: #fff; border: 1px solid var(--sv-border); border-radius: var(--sv-radius-lg); box-shadow: none; }
+            .sv .service-card:hover { border-color: var(--sv-border-strong); box-shadow: none; transform: none; }
+            .sv .service-card:focus-within { border-color: #a3a3a3; box-shadow: none; }
+            .sv .service-card:hover .service-card__media img { transform: none; }
+            .sv .service-card__media { background: var(--sv-hover); color: #a3a3a3; border-bottom: 1px solid var(--sv-border); }
+            .sv .service-card__body { padding: 14px 16px 16px; }
+            .sv .service-card__title { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+            .sv .service-card__category, .sv .service-card__location { font-size: 12px; color: var(--sv-muted); }
+            .sv .price { font-size: 15px; font-weight: 600; color: var(--sv-fg); }
+            .sv .price__unit { color: var(--sv-muted); }
+            .sv .fav-btn {
+                inset: 8px auto auto 8px; width: 32px; height: 32px; border-radius: var(--sv-radius);
+                background: #fff; border: 1px solid var(--sv-border); color: var(--sv-ink); box-shadow: none; font-size: 15px;
+            }
+            .sv .fav-btn:hover { background: var(--sv-hover); color: var(--sv-ink); transform: none; }
+            .sv .fav-btn.is-active { background: #fff; color: #dc2626; }
+
+            /* Review cards (shared fragment) */
+            .sv .review-card { padding: 20px; background: #fff; border: 1px solid var(--sv-border); border-radius: var(--sv-radius-lg); box-shadow: none; }
+            .sv .review-card:hover { box-shadow: none; transform: none; border-color: var(--sv-border-strong); }
+            .sv .review-card__text { font-size: 14px; line-height: 1.6; color: var(--sv-fg); }
+            .sv .review-card__author span:not(.avatar) { color: var(--sv-muted); }
+            .sv .avatar { background: var(--sv-hover); color: var(--sv-ink); border: 1px solid var(--sv-border); font-weight: 600; }
+
+            /* Empty state */
+            .sv .empty-state {
+                padding: 40px 16px; text-align: center; background: transparent;
+                border: 1px dashed var(--sv-border-strong); border-radius: var(--sv-radius-lg);
+            }
+            .sv .empty-state > i { font-size: 22px; color: var(--sv-muted); }
+            .sv .empty-state h3 { margin: 10px 0 4px; font-size: 15px; }
+            .sv .empty-state p { margin: 0 0 16px; font-size: 13px; }
+
+            /* Heading */
+            .sv .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); }
+            .sv .page-head p { margin: 0; font-size: 14px; }
+
+            /* Filters panel */
+            .sv .filters {
+                background: #fff; border: 1px solid var(--sv-border); border-radius: var(--sv-radius-lg); box-shadow: none;
+            }
+            .sv .filters h2 { margin: 0 0 16px; font-size: 16px; }
+            .sv .geo-row { margin-top: 8px; }
+            .sv .geo-chip {
+                display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 12px; font-weight: 500;
+                color: #404040; background: var(--sv-hover); border: 1px solid var(--sv-border); border-radius: 999px;
+            }
+            .sv .geo-chip i { color: var(--sv-muted); }
+            .sv .geo-chip button { padding: 0 2px; border: 0; background: none; color: var(--sv-muted); font-size: 14px; line-height: 1; cursor: pointer; }
+            .sv .geo-chip button:hover { color: var(--sv-fg); }
+
+            /* Results bar */
+            .sv .results-bar {
+                display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+            }
+            .sv .results-bar p { margin: 0; font-size: 14px; color: var(--sv-muted); }
+            .sv .results-bar strong { font-weight: 600; color: var(--sv-fg); }
+            .sv .sort-control { display: flex; align-items: center; gap: 8px; margin: 0; }
+            .sv .sort-control label { font-size: 13px; color: var(--sv-muted); }
+        </style>
+        <script th:src="@{/js/services.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main class="sv">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1 th:text="${criteria.q != null and !criteria.q.isEmpty()}
+                    ? ${'Results for &quot;' + criteria.q + '&quot;'}">Services</h1>
+                <p>Browse verified local professionals, compare prices and book with cash on delivery.</p>
+            </div>
+
+            <button class="btn btn--outline filters-toggle" type="button" data-filters-toggle
+                    aria-expanded="false" aria-controls="filter-form">
+                <i class="bi bi-sliders" aria-hidden="true"></i> Filters
+            </button>
+
+            <div class="catalog">
+                <!--/* Filters. services.js auto-submits the form on sort / radius change. */-->
+                <aside class="filters" aria-label="Filter services">
+                    <h2>Refine</h2>
+
+                    <form class="form" id="filter-form" method="get" th:action="@{/services}"
+                          th:object="${criteria}">
+                        <div class="form-field">
+                            <label class="form-label" for="q">Keyword</label>
+                            <input class="form-control" type="search" id="q" th:field="*{q}"
+                                   placeholder="Plumber, cleaning&hellip;">
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="category">Category</label>
+                            <select class="form-control" id="category" th:field="*{category}">
+                                <option value="">All categories</option>
+                                <option th:each="c : ${categories}" th:value="${c.slug}" th:text="${c.name}">Category</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="location">Area</label>
+                            <input class="form-control" type="text" id="location" th:field="*{location}"
+                                   placeholder="Mirpur, Dhaka">
+                            <div class="geo-row" th:if="${hasGeo}">
+                                <span class="geo-chip">
+                                    <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                                    <span th:text="${criteria.lat + ', ' + criteria.lng}">coords</span>
+                                    <button type="button" data-clear-location aria-label="Clear my location">&times;</button>
+                                </span>
+                            </div>
+                            <div class="geo-row" th:unless="${hasGeo}">
+                                <button class="btn btn--ghost btn--sm" type="button" data-use-location>
+                                    <i class="bi bi-crosshair" aria-hidden="true"></i> Use my location
+                                </button>
+                            </div>
+                            <input type="hidden" th:field="*{lat}" data-geo-lat>
+                            <input type="hidden" th:field="*{lng}" data-geo-lng>
+                        </div>
+
+                        <div class="form-field" th:if="${hasGeo}">
+                            <label class="form-label" for="radius">Within</label>
+                            <select class="form-control" id="radius" th:field="*{radius}" data-auto-submit>
+                                <option value="">Any distance</option>
+                                <option th:each="r : ${radii}" th:value="${r}"
+                                        th:text="${r + ' km'}">10 km</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="minRating">Minimum rating</label>
+                            <select class="form-control" id="minRating" th:field="*{minRating}" data-auto-submit>
+                                <option value="">Any rating</option>
+                                <option value="3">3 stars and up</option>
+                                <option value="4">4 stars and up</option>
+                                <option value="4.5">4.5 stars and up</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <span class="form-label">Price range (&#2547;)</span>
+                            <div style="display: flex; gap: var(--space-3);">
+                                <label class="visually-hidden" for="minPrice">Minimum price</label>
+                                <input class="form-control" type="number" id="minPrice" th:field="*{minPrice}"
+                                       min="0" step="1" placeholder="Min">
+                                <label class="visually-hidden" for="maxPrice">Maximum price</label>
+                                <input class="form-control" type="number" id="maxPrice" th:field="*{maxPrice}"
+                                       min="0" step="1" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <div class="filters__actions">
+                            <button class="btn btn--primary btn--block" type="submit">
+                                <i class="bi bi-funnel" aria-hidden="true"></i> Apply filters
+                            </button>
+                            <a class="btn btn--ghost btn--block" th:href="@{/services}">Reset</a>
+                        </div>
+                    </form>
+                </aside>
+
+                <div>
+                    <div class="results-bar">
+                        <p>
+                            <strong th:text="${#numbers.formatInteger(results.totalElements, 1, 'COMMA')}">0</strong>
+                            <span th:text="${results.totalElements == 1} ? 'service' : 'services'">services</span>
+                            <span th:if="${criteria.category != null}">
+                                in <span th:text="${criteria.category}">category</span>
+                            </span>
+                        </p>
+
+                        <form method="get" th:action="@{/services}" th:object="${criteria}" class="sort-control">
+                            <input type="hidden" th:field="*{q}">
+                            <input type="hidden" th:field="*{category}">
+                            <input type="hidden" th:field="*{location}">
+                            <input type="hidden" th:field="*{lat}">
+                            <input type="hidden" th:field="*{lng}">
+                            <input type="hidden" th:field="*{radius}">
+                            <input type="hidden" th:field="*{minPrice}">
+                            <input type="hidden" th:field="*{maxPrice}">
+                            <input type="hidden" th:field="*{minRating}">
+                            <label for="sort">Sort by</label>
+                            <select class="form-control form-control--sm" id="sort" th:field="*{sort}"
+                                    data-auto-submit-sort>
+                                <option th:each="s : ${sorts}" th:value="${s}" th:text="${s.label}"
+                                        th:unless="${s.name() == 'DISTANCE' and !hasGeo}">Sort</option>
+                                <option th:if="${hasGeo}" value="DISTANCE" th:selected="*{sort}">Nearest</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="service-grid" th:if="${results.totalElements > 0}">
+                        <th:block th:each="service : ${results.content}">
+                            <article th:replace="~{fragments/cards :: serviceCard(${service})}"></article>
+                        </th:block>
+                    </div>
+
+                    <div class="empty-state" th:if="${results.totalElements == 0}">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <h3>No services match your filters</h3>
+                        <p>Try a broader keyword, a different area, or clear the price and rating limits.</p>
+                        <a class="btn btn--primary" th:href="@{/services}">Clear all filters</a>
+                    </div>
+
+                    <div th:replace="~{fragments/pagination :: paginationQuery(${results}, '/services', ${queryString})}"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

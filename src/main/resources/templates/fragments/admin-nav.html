@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!--/*
+    Administration sub-navigation. Every admin page includes this below its own page-head.
+    "activeSection" is set by the admin controllers: dashboard, workers, services, categories,
+    bookings, reviews, users, reports or settings.
+*/-->
+<nav class="admin-bar" th:fragment="adminNav" aria-label="Administration sections">
+    <style>
+        /* ReUI-style look. Scoped under .admin-bar. */
+        .admin-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            box-shadow: none;
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .admin-bar .admin-bar__link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 36px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #737373;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            text-decoration: none;
+            transition: background-color .15s, color .15s;
+        }
+        .admin-bar .admin-bar__link:hover {
+            background: #f5f5f5;
+            color: #0a0a0a;
+            text-decoration: none;
+        }
+        .admin-bar .admin-bar__link.is-active {
+            background: #f5f5f5;
+            border-color: #e5e5e5;
+            color: #0a0a0a;
+        }
+        .admin-bar .admin-bar__link:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+        .admin-bar .admin-bar__link i { color: inherit; }
+    </style>
+    <div class="container admin-bar__inner">
+        <a class="admin-bar__link" th:classappend="${activeSection == 'dashboard'} ? 'is-active'"
+           th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'workers'} ? 'is-active'"
+           th:href="@{/admin/workers}"><i class="bi bi-person-badge" aria-hidden="true"></i> Professionals</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'services'} ? 'is-active'"
+           th:href="@{/admin/services}"><i class="bi bi-briefcase" aria-hidden="true"></i> Services</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'categories'} ? 'is-active'"
+           th:href="@{/admin/categories}"><i class="bi bi-tags" aria-hidden="true"></i> Categories</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'bookings'} ? 'is-active'"
+           th:href="@{/admin/bookings}"><i class="bi bi-calendar-check" aria-hidden="true"></i> Bookings</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'reviews'} ? 'is-active'"
+           th:href="@{/admin/reviews}"><i class="bi bi-star" aria-hidden="true"></i> Reviews</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'users'} ? 'is-active'"
+           th:href="@{/admin/users}"><i class="bi bi-people" aria-hidden="true"></i> Accounts</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'reports'} ? 'is-active'"
+           th:href="@{/admin/reports}"><i class="bi bi-graph-up" aria-hidden="true"></i> Reports</a>
+        <a class="admin-bar__link" th:classappend="${activeSection == 'settings'} ? 'is-active'"
+           th:href="@{/admin/settings}"><i class="bi bi-sliders" aria-hidden="true"></i> Settings</a>
+    </div>
+</nav>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My dashboard</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1 th:text="${profile != null} ? ${profile.name} : 'Set up your professional profile'">My dashboard</h1>
+                <p>Answer new requests, keep your availability current and track what you have earned.</p>
+            </div>
+
+            <!--/* Verification standing: the reason a professional's listings may be invisible. */-->
+            <div class="alert alert--info status-banner" th:if="${summary.missingProfile}">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span>
+                    You have not created a professional profile yet, so you cannot publish services or
+                    receive bookings. <a th:href="@{/worker/profile}">Create your profile</a> to get started.
+                </span>
+            </div>
+
+            <div class="alert alert--warning status-banner"
+                 th:if="${!summary.missingProfile and !summary.published}">
+                <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                <span>
+                    Your profile is awaiting review, so your listings stay hidden from customers
+                    until an administrator approves it.
+                    <a th:href="@{/worker/profile}">Review your profile</a>
+                </span>
+            </div>
+
+            <!--/* Earnings: cash only, so "collected" means handed over in person. */-->
+            <div class="stat-grid">
+                <div class="stat">
+                    <span class="stat__label">Jobs completed</span>
+                    <span class="stat__value" th:text="${earnings.completedJobs}">0</span>
+                    <span class="stat__meta">
+                        <span th:text="${earnings.completedJobs == 1} ? 'job delivered' : 'jobs delivered'">jobs</span>
+                    </span>
+                </div>
+                <div class="stat">
+                    <span class="stat__label">Cash collected</span>
+                    <span class="stat__value">
+                        &#2547;<span th:text="${#numbers.formatDecimal(earnings.cashCollected, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                    </span>
+                    <span class="stat__meta">Received in cash so far</span>
+                </div>
+                <div class="stat" th:classappend="${earnings.cashOutstanding.signum() > 0} ? 'stat--alert'">
+                    <span class="stat__label">Cash to collect</span>
+                    <span class="stat__value">
+                        &#2547;<span th:text="${#numbers.formatDecimal(earnings.cashOutstanding, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                    </span>
+                    <span class="stat__meta">Completed jobs not yet marked paid</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__label">Your earnings</span>
+                    <span class="stat__value">
+                        &#2547;<span th:text="${#numbers.formatDecimal(earnings.netEarnings, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                    </span>
+                    <span class="stat__meta">
+                        Before fees
+                        &#2547;<span th:text="${#numbers.formatDecimal(earnings.platformFees, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="quick-links">
+                <a class="quick-link card card--interactive" th:href="@{/worker/services}">
+                    <span class="quick-link__icon"><i class="bi bi-briefcase" aria-hidden="true"></i></span>
+                    <span>
+                        <strong>My services</strong>
+                        <small>
+                            <span th:text="${summary.activeServices}">0</span> of
+                            <span th:text="${summary.totalServices}">0</span> live
+                        </small>
+                    </span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/worker/bookings}">
+                    <span class="quick-link__icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                    <span><strong>My bookings</strong><small>Requests and history</small></span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/worker/schedule}">
+                    <span class="quick-link__icon"><i class="bi bi-clock" aria-hidden="true"></i></span>
+                    <span><strong>Working hours</strong><small>When customers can book you</small></span>
+                </a>
+                <a class="quick-link card card--interactive" th:href="@{/worker/profile}">
+                    <span class="quick-link__icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+                    <span><strong>My profile</strong><small>Headline, skills and photo</small></span>
+                </a>
+            </div>
+
+            <div class="dash-grid">
+                <!--/* Requests waiting on a decision. */-->
+                <section class="card card--pad dash-card" aria-labelledby="requests-title">
+                    <h2 id="requests-title">
+                        New requests
+                        <span class="badge badge--orange" th:if="${!summary.awaitingResponse.isEmpty()}"
+                              th:text="${summary.awaitingResponse.size()}">0</span>
+                    </h2>
+                    <th:block th:if="${!summary.awaitingResponse.isEmpty()}">
+                        <a class="mini-booking" th:each="b : ${summary.awaitingResponse}"
+                           th:href="@{/worker/bookings(tab='PENDING')}">
+                            <strong th:text="${b.serviceTitle}">Service</strong>
+                            <small>
+                                for <span th:text="${b.customerName}">Customer</span>
+                                &middot; <span th:text="${b.dateLabel}">date</span>
+                                at <span th:text="${b.timeLabel}">time</span>
+                            </small>
+                            <div class="mini-booking__row">
+                                <span>Collect &#2547;<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span> in cash</span>
+                                <span class="badge" th:classappend="'badge--' + ${b.statusTone}"
+                                      th:text="${b.statusLabel}">Status</span>
+                            </div>
+                        </a>
+                        <p style="margin: 1rem 0 0;">
+                            <a class="auth-link" th:href="@{/worker/bookings(tab='PENDING')}">Review all requests</a>
+                        </p>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${summary.awaitingResponse.isEmpty()}">
+                        <i class="bi bi-inbox" aria-hidden="true"></i>
+                        <h3>No requests waiting</h3>
+                        <p>New booking requests will appear here for you to accept or decline.</p>
+                    </div>
+                </section>
+
+                <!--/* Confirmed work, soonest first. */-->
+                <section class="card card--pad dash-card" aria-labelledby="upcoming-title">
+                    <h2 id="upcoming-title">Upcoming jobs</h2>
+                    <th:block th:if="${!summary.upcomingJobs.isEmpty()}">
+                        <a class="mini-booking" th:each="b : ${summary.upcomingJobs}"
+                           th:href="@{/booking/{id}(id=${b.id})}">
+                            <strong th:text="${b.serviceTitle}">Service</strong>
+                            <small>
+                                <span th:text="${b.customerName}">Customer</span>
+                                &middot; <span th:text="${b.address}">address</span>
+                            </small>
+                            <div class="mini-booking__row">
+                                <span><span th:text="${b.dateLabel}">date</span> &middot; <span th:text="${b.timeLabel}">time</span></span>
+                                <span class="badge" th:classappend="'badge--' + ${b.statusTone}"
+                                      th:text="${b.statusLabel}">Status</span>
+                            </div>
+                        </a>
+                        <p style="margin: 1rem 0 0;">
+                            <a class="auth-link" th:href="@{/worker/bookings(tab='UPCOMING')}">See your schedule</a>
+                        </p>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${summary.upcomingJobs.isEmpty()}">
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        <h3>Nothing booked</h3>
+                        <p>Accepted jobs show up here with the address and time.</p>
+                    </div>
+                </section>
+
+                <!--/* Recently delivered jobs. */-->
+                <section class="card card--pad dash-card" aria-labelledby="done-title">
+                    <h2 id="done-title">Recently completed</h2>
+                    <th:block th:if="${!summary.recentJobs.isEmpty()}">
+                        <a class="mini-booking" th:each="b : ${summary.recentJobs}"
+                           th:href="@{/booking/{id}(id=${b.id})}">
+                            <strong th:text="${b.serviceTitle}">Service</strong>
+                            <small>for <span th:text="${b.customerName}">Customer</span></small>
+                            <div class="mini-booking__row">
+                                <span th:text="${b.dateLabel}">date</span>
+                                <span class="badge"
+                                      th:classappend="${b.paymentStatus.name() == 'PAID'} ? 'badge--green' : 'badge--amber'"
+                                      th:text="${b.paymentLabel}">Cash due</span>
+                            </div>
+                        </a>
+                        <p style="margin: 1rem 0 0;">
+                            <a class="auth-link" th:href="@{/worker/bookings(tab='HISTORY')}">See booking history</a>
+                        </p>
+                    </th:block>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${summary.recentJobs.isEmpty()}">
+                        <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+                        <h3>No completed jobs yet</h3>
+                        <p>Mark a job complete and it will appear here.</p>
+                    </div>
+                </section>
+
+                <!--/* How customers see the professional. */-->
+                <section class="card card--pad dash-card" aria-labelledby="standing-title">
+                    <h2 id="standing-title">Your standing</h2>
+                    <dl class="facts" th:if="${profile != null}">
+                        <div>
+                            <dt>Rating</dt>
+                            <dd>
+                                <span th:if="${profile.reviewCount > 0}"
+                                      th:text="${#numbers.formatDecimal(profile.rating, 1, 1)} + ' (' + ${profile.reviewCount} + ')'">4.5 (12)</span>
+                                <span th:if="${profile.reviewCount == 0}" class="text-muted">No reviews yet</span>
+                            </dd>
+                        </div>
+                        <div><dt>Experience</dt><dd><span th:text="${profile.experienceYears}">0</span> years</dd></div>
+                        <div><dt>Area</dt><dd th:text="${profile.location}">Area</dd></div>
+                        <div><dt>Services live</dt><dd th:text="${summary.activeServices}">0</dd></div>
+                        <div>
+                            <dt>Verification</dt>
+                            <dd>
+                                <span class="badge badge--green" th:if="${summary.published}">Approved</span>
+                                <span class="badge badge--amber" th:unless="${summary.published}">Pending review</span>
+                            </dd>
+                        </div>
+                    </dl>
+                    <div class="empty-state" style="padding: 1.75rem 1rem;" th:if="${profile == null}">
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
+                        <h3>No profile yet</h3>
+                        <p>Your rating and completed-job count appear once your profile is approved.</p>
+                        <a class="btn btn--primary btn--sm" th:href="@{/worker/profile}">Create profile</a>
+                    </div>
+                    <a class="btn btn--outline btn--block" style="margin-top: var(--space-4);"
+                       th:if="${summary.published}" th:href="@{/workers/{slug}(slug=${profile.slug})}"
+                       target="_blank" rel="noopener">
+                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> View my public profile
+                    </a>
+                </section>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

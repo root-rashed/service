@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'Ask a question | ' + ${@environment.getProperty('app.name', 'ServiZone')}">Ask a question</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="Ask the ServiZone assistant about services, prices and how cash-on-delivery booking works.">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+        <style>
+            /* ServiZone chat — ReUI-style. Scoped under .ch so nothing outside this page is affected. */
+            .ch {
+                --ch-fg: #0a0a0a;
+                --ch-muted: #737373;
+                --ch-border: #e5e5e5;
+                --ch-border-strong: #d4d4d4;
+                --ch-soft: #fafafa;
+                --ch-hover: #f5f5f5;
+                --ch-ink: #171717;
+                --ch-radius: 8px;
+                --ch-radius-lg: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--ch-fg);
+            }
+            .ch h1, .ch h2, .ch h3 { font-family: inherit; font-weight: 600; letter-spacing: -.02em; color: var(--ch-fg); }
+            .ch p { color: var(--ch-muted); }
+            .ch :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ch-ink); }
+            .ch .section { padding-block: 40px 64px; }
+            .ch .container--narrow { max-width: 760px; }
+            .ch .visually-hidden {
+                position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+                clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+            }
+
+            /* Heading */
+            .ch .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); }
+            .ch .page-head p { margin: 0; font-size: 14px; }
+
+            /* Honesty note */
+            .ch .chat-note {
+                display: flex; gap: 10px; margin-top: 20px; padding: 12px 14px;
+                font-size: 13px; line-height: 1.55; color: #404040;
+                background: var(--ch-soft); border: 1px solid var(--ch-border); border-radius: var(--ch-radius);
+            }
+            .ch .chat-note > i { margin-top: 2px; flex-shrink: 0; color: var(--ch-muted); }
+
+            /* Conversation panel */
+            .ch .chat-shell {
+                background: #fff; border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); box-shadow: none;
+            }
+            .ch .chat-log { background: var(--ch-soft); border-radius: var(--ch-radius-lg) var(--ch-radius-lg) 0 0; }
+            .ch .chat-empty { text-align: center; }
+            .ch .chat-empty > i { font-size: 24px; color: var(--ch-muted); }
+            .ch .chat-empty h3 { margin: 10px 0 4px; font-size: 15px; }
+            .ch .chat-empty p { margin: 0; font-size: 13px; line-height: 1.55; }
+
+            /* Messages */
+            .ch .chat-bubble { border-radius: var(--ch-radius-lg); box-shadow: none; }
+            .ch .chat-bubble p { margin: 0; font-size: 14px; line-height: 1.55; color: inherit; }
+            .ch .chat-msg--theirs .chat-bubble { background: #fff; color: var(--ch-fg); border: 1px solid var(--ch-border); }
+            .ch .chat-msg--mine .chat-bubble { background: var(--ch-ink); color: #fff; border: 1px solid var(--ch-ink); }
+
+            /* Listing cards inside answers */
+            .ch .chat-card {
+                display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px;
+                color: var(--ch-fg); text-decoration: none;
+                background: #fff; border: 1px solid var(--ch-border); border-radius: var(--ch-radius); box-shadow: none;
+                transition: border-color .15s, background-color .15s;
+            }
+            .ch .chat-card:hover { background: var(--ch-soft); border-color: var(--ch-border-strong); transform: none; box-shadow: none; }
+            .ch .chat-card strong { display: block; font-size: 14px; font-weight: 500; color: var(--ch-fg); }
+            .ch .chat-card small { display: block; margin-top: 1px; font-size: 12px; color: var(--ch-muted); }
+            .ch .chat-card__price { flex-shrink: 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ch-fg); }
+            .ch .chat-source { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--ch-muted); }
+
+            /* Input row */
+            .ch .chat-form { display: flex; align-items: flex-start; gap: 8px; }
+            .ch .form-control {
+                display: block; width: 100%; min-height: 36px; padding: 0 12px;
+                font: inherit; font-size: 14px; color: var(--ch-fg); background: #fff;
+                border: 1px solid var(--ch-border); border-radius: var(--ch-radius); box-shadow: none; outline: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .ch .form-control::placeholder { color: #a3a3a3; }
+            .ch .form-control:focus { border-color: #a3a3a3; box-shadow: 0 0 0 3px rgba(0, 0, 0, .06); }
+            .ch .has-error .form-control { border-color: #dc2626; }
+            .ch .has-error .form-control:focus { box-shadow: 0 0 0 3px rgba(220, 38, 38, .12); }
+            .ch .form-error { margin: 6px 0 0; font-size: 12px; color: #dc2626; }
+
+            .ch .btn {
+                min-height: 36px; padding: 0 14px; font-size: 14px; font-weight: 500;
+                border-width: 1px; border-radius: var(--ch-radius); box-shadow: none;
+            }
+            .ch .btn--primary { background: var(--ch-ink); border-color: var(--ch-ink); color: #fff; }
+            .ch .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+
+            /* Suggestions */
+            .ch .chat-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+            .ch .chat-chip {
+                padding: 5px 12px; font: inherit; font-size: 13px; font-weight: 500; color: var(--ch-fg); cursor: pointer;
+                background: #fff; border: 1px solid var(--ch-border); border-radius: 999px; box-shadow: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .ch .chat-chip:hover { background: var(--ch-hover); border-color: var(--ch-border-strong); transform: none; }
+
+            /* Clear conversation */
+            .ch button.auth-link {
+                display: inline-flex; align-items: center; gap: 6px; padding: 4px 0; font: inherit; font-size: 13px; font-weight: 500;
+                color: var(--ch-muted); background: none; border: 0; cursor: pointer;
+            }
+            .ch button.auth-link:hover { color: var(--ch-fg); text-decoration: underline; }
+
+            @media (max-width: 560px) {
+                .ch .section { padding-block: 28px 48px; }
+                .ch .chat-form { flex-wrap: wrap; }
+                .ch .chat-form .btn { width: 100%; }
+            }
+        </style>
+        <script th:src="@{/js/chatbot.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main class="ch">
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>Ask us anything</h1>
+                <p>Tell me what job you need done and I will list professionals, their prices and their ratings.</p>
+            </div>
+
+            <div class="chat-shell" style="margin-top: var(--space-5);">
+                <div class="chat-log" id="chat-log" role="log" aria-live="polite"
+                     aria-label="Conversation">
+
+                    <div class="chat-empty" th:if="${#lists.isEmpty(turns)}">
+                        <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                        <h3>Start the conversation</h3>
+                    </div>
+
+                    <div class="chat-msg" th:each="turn : ${turns}"
+                         th:classappend="${turn.fromCustomer} ? 'chat-msg--mine' : 'chat-msg--theirs'">
+                        <div class="chat-bubble">
+                            <p th:text="${turn.text}">Message</p>
+                        </div>
+
+                        <!--/* The cards come from the catalogue query, not from the reply text. */-->
+                        <div class="chat-cards" th:if="${turn.reply != null and !turn.reply.guidanceOnly}">
+                            <a class="chat-card" th:each="service : ${turn.reply.services}"
+                               th:href="@{/services/{slug}(slug=${service.slug})}">
+                                <span>
+                                    <strong th:text="${service.title}">Service</strong>
+                                    <small>
+                                        <span th:text="${service.categoryName}">Category</span>
+                                        <span th:if="${service.reviewCount > 0}">
+                                            &middot; <span th:text="${#numbers.formatDecimal(service.rating, 1, 1)}">4.9</span>
+                                            (<span th:text="${service.reviewCount}">12</span>)
+                                        </span>
+                                        <span th:if="${service.location != null}"
+                                              th:text="' &middot; ' + ${service.location}">area</span>
+                                    </small>
+                                </span>
+                                <span class="chat-card__price">
+                                    &#2547;<span th:text="${#numbers.formatInteger(service.price, 1, 'COMMA')}">1,200</span>
+                                </span>
+                            </a>
+                        </div>
+
+                        <!--/* Says plainly when the answer came from the built-in answers. */-->
+                        <span class="chat-source" th:if="${turn.reply != null and turn.reply.fromRules}">
+                            <i class="bi bi-list-check" aria-hidden="true"></i> Standard answer
+                        </span>
+                    </div>
+                </div>
+
+                <form class="chat-form" method="post" th:action="@{/chat}" th:object="${chatForm}"
+                      data-chat-form>
+                    <div class="form-field"
+                         th:classappend="${questionError != null} ? 'has-error'"
+                         style="flex: 1; margin-bottom: 0;">
+                        <label class="visually-hidden" for="question">Your question</label>
+                        <input class="form-control" type="text" id="question" th:field="*{question}"
+                               maxlength="500" autocomplete="off"
+                               placeholder="e.g. How much does a deep clean cost in Mirpur?"
+                               aria-describedby="question-error"
+                               th:attr="aria-invalid=${questionError != null}">
+                        <p class="form-error" id="question-error" th:if="${questionError != null}"
+                           th:text="${questionError.defaultMessage}" role="alert">Type a question first.</p>
+                    </div>
+                    <button class="btn btn--primary" type="submit">
+                        <i class="bi bi-send" aria-hidden="true"></i> Ask
+                    </button>
+                </form>
+
+                <div class="chat-chips" role="group" aria-label="Suggested questions">
+                    <button class="chat-chip" type="button" th:each="suggestion : ${suggestions}"
+                            th:text="${suggestion}"
+                            data-chat-chip>Suggestion</button>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(turns)}">
+                    <form method="post" th:action="@{/chat/clear}">
+                        <button class="auth-link" type="submit">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                            Clear this conversation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="site-header" th:fragment="navbar" data-site-header>
+    <style>
+        /* ServiZone navbar — ReUI-style. Scoped under .site-header so it overrides main.css without touching other pages. */
+        .site-header {
+            --header-h: 60px;
+            --n-fg: #0a0a0a;
+            --n-muted: #737373;
+            --n-border: #e5e5e5;
+            --n-hover: #f5f5f5;
+            --n-radius: 8px;
+            background: #fff;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border-bottom: 1px solid var(--n-border);
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .site-header :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #171717; border-radius: var(--n-radius); }
+
+        .site-header .site-header__inner { gap: 24px; height: var(--header-h); }
+
+        /* Brand */
+        .site-header .brand { gap: 10px; }
+        .site-header .brand img { width: 30px; height: 30px; }
+        .site-header .brand__name {
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -.02em;
+            color: var(--n-fg);
+        }
+
+        /* Links */
+        .site-header .site-nav { gap: 16px; }
+        .site-header .site-nav__links { gap: 2px; }
+        .site-header .site-nav__link {
+            height: 32px;
+            padding-inline: 12px;
+            border-radius: var(--n-radius);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--n-muted);
+        }
+        .site-header .site-nav__link:hover,
+        .site-header .site-nav__link.is-active { color: var(--n-fg); background: var(--n-hover); }
+        .site-header .site-nav__link::after { display: none; }
+
+        /* Icon buttons */
+        .site-header .icon-btn {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--n-radius);
+            font-size: 16px;
+            color: var(--n-muted);
+        }
+        .site-header .icon-btn:hover,
+        .site-header .icon-btn.is-active { background: var(--n-hover); color: var(--n-fg); }
+
+        .site-header .bell-count {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #171717;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 16px;
+            text-align: center;
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        /* Login / Sign up */
+        .site-header .site-nav__divider { height: 20px; background: var(--n-border); }
+        .site-header .site-nav__login {
+            display: inline-flex;
+            align-items: center;
+            height: 32px;
+            padding-inline: 12px;
+            border-radius: var(--n-radius);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--n-fg);
+        }
+        .site-header .site-nav__login:hover { background: var(--n-hover); color: var(--n-fg); }
+
+        .site-header .btn--primary {
+            min-height: 32px;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--n-radius);
+            border-color: #171717;
+            background: #171717;
+            color: #fff;
+            box-shadow: none;
+        }
+        .site-header .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+
+        /* Account menu */
+        .site-header .user-menu summary {
+            min-height: 36px;
+            padding: 2px 10px 2px 2px;
+            border-radius: var(--n-radius);
+        }
+        .site-header .user-menu summary:hover { background: var(--n-hover); }
+        .site-header .avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--n-hover);
+            border: 1px solid var(--n-border);
+            color: var(--n-fg);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .site-header .user-menu__name { font-size: 14px; font-weight: 500; color: var(--n-fg); }
+        .site-header .user-menu summary .bi-chevron-down { font-size: 11px; color: var(--n-muted); transition: transform .15s; }
+        .site-header .user-menu[open] summary .bi-chevron-down { transform: rotate(180deg); }
+
+        .site-header .user-menu__panel {
+            top: calc(100% + 6px);
+            min-width: 200px;
+            padding: 4px;
+            background: #fff;
+            border: 1px solid var(--n-border);
+            border-radius: var(--n-radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+        }
+        .site-header .user-menu__item {
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--n-fg);
+        }
+        .site-header .user-menu__item i { color: var(--n-muted); }
+        .site-header .user-menu__item:hover { background: var(--n-hover); color: var(--n-fg); }
+        .site-header .user-menu__sep { margin: 4px 0; background: var(--n-border); }
+
+        /* Mobile menu */
+        @media (max-width: 900px) {
+            .site-header .site-nav {
+                gap: 0;
+                padding: 12px 16px 16px;
+                background: #fff;
+                border-bottom: 1px solid var(--n-border);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+            }
+            .site-header .site-nav__links { gap: 2px; }
+            .site-header .site-nav__link { height: 40px; }
+            .site-header .site-nav__actions {
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid var(--n-border);
+            }
+            .site-header .icon-btn { width: 40px; height: 40px; }
+            .site-header .site-nav__login { height: 40px; }
+            .site-header .btn--primary { min-height: 40px; }
+            .site-header .user-menu summary { min-height: 40px; }
+            .site-header .user-menu__panel { position: static; margin-top: 8px; box-shadow: none; }
+        }
+    </style>
+    <div class="container site-header__inner">
+        <a class="brand" th:href="@{/}" aria-label="Home">
+            <img th:src="@{/images/logo.svg}" alt="" width="36" height="36">
+            <span class="brand__name" th:text="${@environment.getProperty('app.name', 'ServiZone')}">ServiZone</span>
+        </a>
+
+        <button class="icon-btn nav-toggle" type="button" aria-label="Toggle menu"
+                aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+            <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+            <ul class="site-nav__links">
+                <li><a class="site-nav__link" th:classappend="${activeNav == 'home'} ? 'is-active'"
+                       th:attr="aria-current=${activeNav == 'home'} ? 'page'" th:href="@{/}">Home</a></li>
+                <li><a class="site-nav__link" th:classappend="${activeNav == 'services'} ? 'is-active'"
+                       th:attr="aria-current=${activeNav == 'services'} ? 'page'" th:href="@{/services}">Services</a></li>
+                <li><a class="site-nav__link" th:classappend="${activeNav == 'professionals'} ? 'is-active'"
+                       th:attr="aria-current=${activeNav == 'professionals'} ? 'page'" th:href="@{/workers}">Find Professionals</a></li>
+                <li><a class="site-nav__link" th:href="@{/#how-it-works}">How It Works</a></li>
+                <li><a class="site-nav__link" th:classappend="${activeNav == 'about'} ? 'is-active'"
+                       th:attr="aria-current=${activeNav == 'about'} ? 'page'" th:href="@{/about}">About</a></li>
+            </ul>
+
+            <div class="site-nav__actions">
+                <a class="icon-btn" th:href="@{/search}" aria-label="Search services">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </a>
+                <a class="icon-btn" th:href="@{/chat}" aria-label="Ask the assistant"
+                   th:classappend="${activeNav == 'chat'} ? 'is-active'">
+                    <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                </a>
+                <a class="icon-btn" th:href="@{/favorites}" aria-label="Saved services"
+                   sec:authorize="!isAuthenticated() or hasRole('CUSTOMER')">
+                    <i class="bi bi-heart" aria-hidden="true"></i>
+                </a>
+                <a class="icon-btn icon-btn--bell" th:href="@{/notifications}" aria-label="Notifications"
+                   sec:authorize="isAuthenticated()" data-notification-bell>
+                    <i class="bi bi-bell" aria-hidden="true"></i>
+                    <span class="bell-count" th:if="${unreadNotifications > 0}"
+                          th:text="${unreadNotifications > 99} ? '99+' : ${unreadNotifications}">3</span>
+                </a>
+
+                <!-- Anonymous visitors -->
+                <th:block sec:authorize="!isAuthenticated()">
+                    <span class="site-nav__divider" aria-hidden="true"></span>
+                    <a class="site-nav__login" th:href="@{/login}">Login</a>
+                    <a class="btn btn--primary btn--sm" th:href="@{/register}">Sign Up</a>
+                </th:block>
+
+                <!-- Signed-in users -->
+                <details class="user-menu" sec:authorize="isAuthenticated()">
+                    <summary aria-label="Account menu">
+                        <span class="avatar" aria-hidden="true">
+                            <img th:if="${#authentication.principal.profileImageUrl != null}"
+                                 th:src="@{${#authentication.principal.profileImageUrl}}" alt="">
+                            <th:block th:unless="${#authentication.principal.profileImageUrl != null}"
+                                      th:text="${#strings.toUpperCase(#strings.substring(#authentication.principal.displayName, 0, 1))}">U</th:block>
+                        </span>
+                        <span class="user-menu__name" th:text="${#authentication.principal.displayName}">Account</span>
+                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </summary>
+                    <div class="user-menu__panel">
+                        <th:block sec:authorize="hasRole('CUSTOMER')">
+                            <a class="user-menu__item" th:href="@{/customer/dashboard}"><i class="bi bi-grid"></i> Dashboard</a>
+                            <a class="user-menu__item" th:href="@{/customer/bookings}"><i class="bi bi-calendar-check"></i> My bookings</a>
+                            <a class="user-menu__item" th:href="@{/favorites}"><i class="bi bi-heart"></i> Saved services</a>
+                            <a class="user-menu__item" th:href="@{/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+                            <a class="user-menu__item" th:href="@{/customer/profile}"><i class="bi bi-person"></i> My profile</a>
+                        </th:block>
+                        <th:block sec:authorize="hasRole('WORKER')">
+                            <a class="user-menu__item" th:href="@{/worker/dashboard}"><i class="bi bi-grid"></i> Dashboard</a>
+                            <a class="user-menu__item" th:href="@{/worker/bookings}"><i class="bi bi-calendar-check"></i> Bookings</a>
+                            <a class="user-menu__item" th:href="@{/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+                            <a class="user-menu__item" th:href="@{/worker/profile}"><i class="bi bi-person-badge"></i> My profile</a>
+                            <a class="user-menu__item" th:href="@{/worker/services}"><i class="bi bi-briefcase"></i> My services</a>
+                            <a class="user-menu__item" th:href="@{/worker/schedule}"><i class="bi bi-clock"></i> Schedule</a>
+                            <a class="user-menu__item" th:href="@{/worker/reviews}"><i class="bi bi-star"></i> Reviews</a>
+                        </th:block>
+                        <th:block sec:authorize="hasRole('ADMIN')">
+                            <a class="user-menu__item" th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Admin dashboard</a>
+                            <a class="user-menu__item" th:href="@{/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+                        </th:block>
+                        <div class="user-menu__sep"></div>
+                        <form th:action="@{/logout}" method="post">
+                            <button class="user-menu__item" type="submit"><i class="bi bi-box-arrow-right"></i> Log out</button>
+                        </form>
+                    </div>
+                </details>
+            </div>
+        </nav>
+    </div>
+</header>
+</body>
+</html>

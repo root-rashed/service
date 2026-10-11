@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Admin dashboard</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <style>
+            /* ServiZone admin dashboard — ReUI-style. Scoped under .ad so other admin pages are not affected. */
+            .ad {
+                --ad-fg: #0a0a0a;
+                --ad-muted: #737373;
+                --ad-border: #e5e5e5;
+                --ad-border-strong: #d4d4d4;
+                --ad-soft: #fafafa;
+                --ad-hover: #f5f5f5;
+                --ad-ink: #171717;
+                --ad-radius: 8px;
+                --ad-radius-lg: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--ad-fg);
+            }
+            .ad h1, .ad h2, .ad h3 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.02em;
+                color: var(--ad-fg);
+            }
+            .ad p { color: var(--ad-muted); }
+            .ad :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ad-ink); }
+            .ad .section { padding-block: 24px; }
+            .ad .section:first-child { padding-top: 40px; padding-bottom: 8px; }
+
+            /* Page heading */
+            .ad .page-head h1 { margin-bottom: 6px; font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); }
+            .ad .page-head p { margin: 0; font-size: 14px; }
+
+            /* Buttons */
+            .ad .btn {
+                min-height: 32px;
+                padding: 0 12px;
+                font-size: 13px;
+                font-weight: 500;
+                border-width: 1px;
+                border-radius: var(--ad-radius);
+            }
+            .ad .btn--outline { background: #fff; border-color: var(--ad-border); color: var(--ad-fg); box-shadow: none; }
+            .ad .btn--outline:hover { background: var(--ad-hover); border-color: var(--ad-border-strong); box-shadow: none; }
+
+            /* Stat tiles */
+            .ad .stat-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+            .ad .stat {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                padding: 16px 20px;
+                background: #fff;
+                border: 1px solid var(--ad-border);
+                border-radius: var(--ad-radius-lg);
+                box-shadow: none;
+                color: var(--ad-fg);
+                text-decoration: none;
+                transition: border-color .15s, background-color .15s;
+            }
+            .ad a.stat:hover { background: var(--ad-soft); border-color: var(--ad-border-strong); transform: none; box-shadow: none; }
+            .ad .stat__label { font-size: 13px; font-weight: 500; color: var(--ad-muted); }
+            .ad .stat__value {
+                font-size: 1.75rem;
+                font-weight: 600;
+                line-height: 1.2;
+                letter-spacing: -.02em;
+                font-variant-numeric: tabular-nums;
+                color: var(--ad-fg);
+            }
+            .ad .stat__meta { font-size: 12px; color: var(--ad-muted); }
+            .ad .stat--alert { background: #fef2f2; border-color: #fecaca; }
+            .ad a.stat--alert:hover { background: #fee2e2; border-color: #fca5a5; }
+            .ad .stat--alert .stat__value { color: #b91c1c; }
+            .ad .stat--alert .stat__meta { color: #b91c1c; }
+
+            /* Panels */
+            .ad .dash-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+                margin-top: 24px;
+            }
+            .ad .card {
+                background: #fff;
+                border: 1px solid var(--ad-border);
+                border-radius: var(--ad-radius-lg);
+                box-shadow: none;
+            }
+            .ad .card--pad { padding: 20px; }
+            .ad .dash-card { display: flex; flex-direction: column; min-width: 0; }
+            .ad .dash-card > h2 { margin: 0 0 16px; font-size: 16px; }
+            .ad .page-head--row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+            .ad .page-head--row h2 { margin: 0; font-size: 16px; }
+
+            /* Rows inside panels */
+            .ad .manage-list { display: flex; flex-direction: column; gap: 8px; }
+            .ad .manage-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 10px 12px;
+                border-radius: var(--ad-radius);
+                color: var(--ad-fg);
+                text-decoration: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .ad a.manage-item:hover { background: var(--ad-soft); border-color: var(--ad-border-strong); transform: none; box-shadow: none; }
+            .ad .manage-item__main { min-width: 0; }
+            .ad .manage-item__main strong {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--ad-fg);
+            }
+            .ad .manage-item__meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0 10px;
+                margin: 2px 0 0;
+                font-size: 12px;
+                color: var(--ad-muted);
+            }
+            .ad .admin-table__person { display: flex; align-items: center; gap: 12px; min-width: 0; }
+            .ad .avatar {
+                width: 32px;
+                height: 32px;
+                flex-shrink: 0;
+                background: var(--ad-hover);
+                color: var(--ad-ink);
+                border: 1px solid var(--ad-border);
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .ad .cell-money {
+                flex-shrink: 0;
+                font-size: 14px;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+                color: var(--ad-fg);
+            }
+            .ad .dash-card__more { margin: 16px 0 0; font-size: 13px; }
+            .ad .dash-card__more a { font-weight: 500; color: var(--ad-fg); text-decoration: underline; text-underline-offset: 2px; }
+
+            /* Status badges: neutral by default, tinted for the usual tone names. */
+            .ad .badge {
+                display: inline-flex;
+                align-items: center;
+                flex-shrink: 0;
+                height: 22px;
+                padding: 0 8px;
+                border: 1px solid var(--ad-border);
+                border-radius: 999px;
+                background: var(--ad-hover);
+                color: #404040;
+                font-size: 12px;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+            .ad .badge--success, .ad .badge--positive, .ad .badge--approved, .ad .badge--active, .ad .badge--green
+            { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+            .ad .badge--warning, .ad .badge--pending, .ad .badge--amber, .ad .badge--orange
+            { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+            .ad .badge--danger, .ad .badge--error, .ad .badge--rejected, .ad .badge--suspended, .ad .badge--red
+            { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+            .ad .badge--info, .ad .badge--primary, .ad .badge--blue
+            { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+
+            /* Empty states */
+            .ad .empty-state {
+                padding: 28px 16px;
+                text-align: center;
+                background: transparent;
+                border: 1px dashed var(--ad-border-strong);
+                border-radius: var(--ad-radius);
+            }
+            .ad .empty-state > i { font-size: 20px; color: var(--ad-muted); }
+            .ad .empty-state h3 { margin: 8px 0 2px; font-size: 14px; }
+            .ad .empty-state p { margin: 0; font-size: 13px; }
+
+            /* Bookings by status */
+            .ad .detail-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 8px;
+                margin: 0;
+            }
+            .ad .detail-grid > div {
+                padding: 10px 12px;
+                border: 1px solid var(--ad-border);
+                border-radius: var(--ad-radius);
+            }
+            .ad .detail-grid dt { font-size: 12px; font-weight: 500; color: var(--ad-muted); }
+            .ad .detail-grid dd {
+                margin: 2px 0 0;
+                font-size: 1.25rem;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+                color: var(--ad-fg);
+            }
+
+            @media (max-width: 900px) {
+                .ad .dash-grid { grid-template-columns: 1fr; }
+            }
+            @media (max-width: 560px) {
+                .ad .section:first-child { padding-top: 28px; }
+                .ad .card--pad { padding: 16px; }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="ad">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Platform overview</h1>
+                <p>People, listings, bookings and the cash collected across ServiZone.</p>
+            </div>
+        </div>
+    </section>
+
+    <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+    <section class="section">
+        <div class="container">
+            <!-- Two tiles are links to the queues that need attention; the rest are read-only. -->
+            <div class="stat-grid">
+                <a class="stat" th:classappend="${summary.hasPendingVerifications()} ? 'stat--alert'"
+                   th:href="@{/admin/workers/queue}">
+                    <span class="stat__label">Awaiting review</span>
+                    <span class="stat__value" th:text="${summary.pendingWorkers}">0</span>
+                    <span class="stat__meta"
+                          th:text="${summary.pendingWorkers == 1} ? '1 professional profile' : ${summary.pendingWorkers} + ' professional profiles'">0</span>
+                </a>
+                <a class="stat" th:classappend="${summary.hasOutstandingCash()} ? 'stat--alert'"
+                   th:href="@{/admin/bookings/unpaid}">
+                    <span class="stat__label">Cash not confirmed</span>
+                    <span class="stat__value" th:text="${summary.unpaidCompletedBookings}">0</span>
+                    <span class="stat__meta">Completed jobs awaiting cash</span>
+                </a>
+                <div class="stat">
+                    <span class="stat__label">Cash collected</span>
+                    <span class="stat__value">&#2547;<span th:text="${#numbers.formatDecimal(summary.cashCollected, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                    <span class="stat__meta">All confirmed cash payments</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__label">Still owed</span>
+                    <span class="stat__value">&#2547;<span th:text="${#numbers.formatDecimal(summary.cashOutstanding, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                    <span class="stat__meta">Value of every completed job</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__label">Platform fee earned</span>
+                    <span class="stat__value">&#2547;<span th:text="${#numbers.formatDecimal(summary.platformFeesEarned, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                    <span class="stat__meta">On confirmed cash only</span>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <a class="stat" th:href="@{/admin/users}">
+                    <span class="stat__label">Customers</span>
+                    <span class="stat__value" th:text="${summary.customers}">0</span>
+                    <span class="stat__meta">Registered accounts</span>
+                </a>
+                <a class="stat" th:href="@{/admin/workers}">
+                    <span class="stat__label">Professionals</span>
+                    <span class="stat__value" th:text="${summary.workers}">0</span>
+                    <span class="stat__meta">
+                        <span th:text="${summary.approvedWorkers}">0</span> approved
+                    </span>
+                </a>
+                <a class="stat" th:href="@{/admin/services}">
+                    <span class="stat__label">Services listed</span>
+                    <span class="stat__value" th:text="${summary.services}">0</span>
+                    <span class="stat__meta">
+                        <span th:text="${summary.activeServices}">0</span> active
+                    </span>
+                </a>
+                <a class="stat" th:href="@{/admin/bookings}">
+                    <span class="stat__label">Bookings</span>
+                    <span class="stat__value" th:text="${summary.bookings}">0</span>
+                    <span class="stat__meta">
+                        <span th:text="${summary.openBookings}">0</span> open &middot;
+                        <span th:text="${summary.completedBookings}">0</span> completed
+                    </span>
+                </a>
+                <a class="stat" th:href="@{/admin/reviews}">
+                    <span class="stat__label">Reviews</span>
+                    <span class="stat__value" th:text="${summary.reviews}">0</span>
+                    <span class="stat__meta">
+                        <span th:text="${summary.hiddenReviews}">0</span> hidden
+                    </span>
+                </a>
+            </div>
+
+            <div class="dash-grid">
+                <!-- Verification queue preview -->
+                <section class="card card--pad dash-card" aria-labelledby="queue-title">
+                    <div class="page-head--row">
+                        <h2 id="queue-title">Verification queue</h2>
+                        <a class="btn btn--outline btn--sm" th:href="@{/admin/workers/queue}">Open queue</a>
+                    </div>
+                    <div class="manage-list" th:if="${!pendingWorkers.isEmpty()}">
+                        <a class="card manage-item" th:each="w : ${pendingWorkers}"
+                           th:href="@{/admin/workers/{id}(id=${w.id})}">
+                            <div class="admin-table__person">
+                                <span class="avatar" aria-hidden="true">
+                                    <img th:if="${w.profileImageUrl != null}" th:src="@{${w.profileImageUrl}}" alt="">
+                                    <th:block th:unless="${w.profileImageUrl != null}"
+                                              th:text="${#strings.toUpperCase(#strings.substring(w.displayName, 0, 1))}">P</th:block>
+                                </span>
+                                <div class="manage-item__main">
+                                    <strong th:text="${w.displayName}">Professional</strong>
+                                    <p class="manage-item__meta">
+                                        <span th:text="${w.headline}">Headline</span>
+                                        <span th:text="${w.area}">Area</span>
+                                        <span><span th:text="${w.serviceCount}">0</span> listings</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="badge" th:classappend="'badge--' + ${w.statusTone}"
+                                  th:text="${w.statusLabel}">Status</span>
+                        </a>
+                    </div>
+                    <div class="empty-state" th:if="${pendingWorkers.isEmpty()}">
+                        <i class="bi bi-check2-all" aria-hidden="true"></i>
+                        <h3>Queue is clear</h3>
+                        <p>No professional profiles are waiting for a decision.</p>
+                    </div>
+                    <p class="dash-card__more" th:if="${pendingCount > pendingWorkers.size()}">
+                        <span th:text="${pendingCount - pendingWorkers.size()}">0</span> more waiting.
+                        <a th:href="@{/admin/workers/queue}">See the full queue</a>
+                    </p>
+                </section>
+
+                <!-- Bookings holding a calendar slot -->
+                <section class="card card--pad dash-card" aria-labelledby="open-title">
+                    <div class="page-head--row">
+                        <h2 id="open-title">Open bookings</h2>
+                        <a class="btn btn--outline btn--sm" th:href="@{/admin/bookings}">All bookings</a>
+                    </div>
+                    <div class="manage-list" th:if="${!openBookings.isEmpty()}">
+                        <a class="card manage-item" th:each="b : ${openBookings}"
+                           th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <div class="manage-item__main">
+                                <strong th:text="${b.serviceTitle}">Service</strong>
+                                <p class="manage-item__meta">
+                                    <span th:text="${b.dateLabel}">date</span>
+                                    <span th:text="${b.timeLabel}">time</span>
+                                    <span th:text="${b.customerName}">Customer</span>
+                                    <span th:text="${b.workerName}">Professional</span>
+                                </p>
+                            </div>
+                            <span class="badge" th:classappend="'badge--' + ${b.statusTone}"
+                                  th:text="${b.statusLabel}">Status</span>
+                        </a>
+                    </div>
+                    <div class="empty-state" th:if="${openBookings.isEmpty()}">
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        <h3>Nothing open</h3>
+                        <p>No booking is currently holding a professional's calendar.</p>
+                    </div>
+                </section>
+
+                <!-- Cash reconciliation -->
+                <section class="card card--pad dash-card" aria-labelledby="unpaid-title">
+                    <div class="page-head--row">
+                        <h2 id="unpaid-title">Cash to confirm</h2>
+                        <a class="btn btn--outline btn--sm" th:href="@{/admin/bookings/unpaid}">See all</a>
+                    </div>
+                    <div class="manage-list" th:if="${!unpaidBookings.isEmpty()}">
+                        <a class="card manage-item" th:each="b : ${unpaidBookings}"
+                           th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <div class="manage-item__main">
+                                <strong th:text="${b.serviceTitle}">Service</strong>
+                                <p class="manage-item__meta">
+                                    <span th:text="${b.dateLabel}">date</span>
+                                    <span th:text="${b.workerName}">Professional</span>
+                                </p>
+                            </div>
+                            <span class="cell-money">&#2547;<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
+                        </a>
+                    </div>
+                    <div class="empty-state" th:if="${unpaidBookings.isEmpty()}">
+                        <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                        <h3>All settled</h3>
+                        <p>Every completed job has had its cash confirmed.</p>
+                    </div>
+                    <p class="dash-card__more" th:if="${unpaidCount > unpaidBookings.size()}">
+                        <span th:text="${unpaidCount - unpaidBookings.size()}">0</span> more awaiting confirmation.
+                    </p>
+                </section>
+
+                <!-- Latest activity -->
+                <section class="card card--pad dash-card" aria-labelledby="recent-title">
+                    <div class="page-head--row">
+                        <h2 id="recent-title">Latest bookings</h2>
+                        <a class="btn btn--outline btn--sm" th:href="@{/admin/bookings}">All bookings</a>
+                    </div>
+                    <div class="manage-list" th:if="${!recentBookings.isEmpty()}">
+                        <a class="card manage-item" th:each="b : ${recentBookings}"
+                           th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <div class="manage-item__main">
+                                <strong th:text="${b.serviceTitle}">Service</strong>
+                                <p class="manage-item__meta">
+                                    <span th:text="${b.customerName}">Customer</span>
+                                    <span th:text="${b.createdOn}">created</span>
+                                </p>
+                            </div>
+                            <span class="badge" th:classappend="'badge--' + ${b.statusTone}"
+                                  th:text="${b.statusLabel}">Status</span>
+                        </a>
+                    </div>
+                    <div class="empty-state" th:if="${recentBookings.isEmpty()}">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <h3>No bookings yet</h3>
+                        <p>Bookings will appear here as soon as customers start booking.</p>
+                    </div>
+                </section>
+
+                <!-- Newest accounts -->
+                <section class="card card--pad dash-card" aria-labelledby="newusers-title">
+                    <div class="page-head--row">
+                        <h2 id="newusers-title">Newest accounts</h2>
+                        <a class="btn btn--outline btn--sm" th:href="@{/admin/users}">All accounts</a>
+                    </div>
+                    <div class="manage-list" th:if="${!newUsers.isEmpty()}">
+                        <a class="card manage-item" th:each="u : ${newUsers}"
+                           th:href="@{/admin/users/{id}(id=${u.id})}">
+                            <div class="admin-table__person">
+                                <span class="avatar" aria-hidden="true">
+                                    <img th:if="${u.profileImageUrl != null}" th:src="@{${u.profileImageUrl}}" alt="">
+                                    <th:block th:unless="${u.profileImageUrl != null}" th:text="${u.initials()}">U</th:block>
+                                </span>
+                                <div class="manage-item__main">
+                                    <strong th:text="${u.name}">User</strong>
+                                    <p class="manage-item__meta">
+                                        <span th:text="${u.email}">email</span>
+                                        <span th:text="${u.role}">role</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="badge" th:classappend="'badge--' + ${u.statusTone}"
+                                  th:text="${u.statusLabel}">Status</span>
+                        </a>
+                    </div>
+                    <div class="empty-state" th:if="${newUsers.isEmpty()}">
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                        <h3>No accounts yet</h3>
+                        <p>New sign-ups will appear here.</p>
+                    </div>
+                </section>
+
+                <!-- Booking status breakdown -->
+                <section class="card card--pad dash-card" aria-labelledby="status-title">
+                    <h2 id="status-title">Bookings by status</h2>
+                    <dl class="detail-grid">
+                        <div th:each="entry : ${summary.statuses()}">
+                            <dt th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(entry.key, '_', ' ')))}">Status</dt>
+                            <dd th:text="${entry.value}">0</dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

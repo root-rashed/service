@@ -1,0 +1,92 @@
+# ServiZone, run with Docker Compose.
+#
+#   docker compose up --build                 the marketplace
+#   docker compose --profile ai up --build    the marketplace plus a local Ollama model
+#
+# MongoDB is MongoDB Atlas, not a container: the connection string is already in
+# src/main/resources/application.yml. There is deliberately no database service here, so there is
+# no local copy of production data to look after.
+#
+# Every value below has a default in application.yml, so this file can stay empty of secrets. Put
+# the ones you care about in a .env file next to it; Compose reads that automatically.
+
+services:
+  app:
+    build:
+      context: .
+    image: servizone/app:latest
+    container_name: servizone-app
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      # --- Required in production, blank by default so nothing is created unless asked for. ---
+      # The first administrator is created on an empty database only, and an existing non-admin
+      # account is never promoted. See the "First administrator" section of the README.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+
+      # --- MongoDB Atlas ---
+      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://mongo:mangomango@apitesting.fdd2m4g.mongodb.net/serviceDB?appName=apiTesting}
+
+      # --- Outgoing mail ---
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-rashedulislam.raze@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-cyjrhvzssouxzbec}
+      MAIL_FROM: ${MAIL_FROM:-rashedulislam.raze@gmail.com}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-rashedulislam.raze@gmail.com}
+
+      # --- Uploads and links ---
+      STORAGE_PATH: /app/storage
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Dhaka}
+
+      # --- Assistant ---
+      # Enabled either way: when Ollama is unreachable the page answers from the built-in rules.
+      CHATBOT_ENABLED: ${CHATBOT_ENABLED:-true}
+      CHATBOT_TIMEOUT_SECONDS: ${CHATBOT_TIMEOUT_SECONDS:-20}
+      # Inside the compose network the model is "ollama", not localhost.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-llama3.2}
+
+      # --- Housekeeping ---
+      OTP_SECRET: ${OTP_SECRET:-dev-only-otp-secret-change-me}
+      PLATFORM_FEE_PERCENT: ${PLATFORM_FEE_PERCENT:-5}
+    volumes:
+      # Uploaded images outlive the container. Without this, replacing the image loses every photo.
+      - storage:/app/storage
+    depends_on:
+      ollama:
+        condition: service_started
+        required: false
+    restart: unless-stopped
+
+  # Optional. Only starts with `--profile ai`.
+  #
+  # The model has to be fetched once, which is not something Compose can do for you:
+  #
+  #   docker compose --profile ai run --rm ollama pull llama3.2
+  #
+  # Until it has been pulled the assistant answers from the rules, so nothing breaks in the
+  # meantime; it is only slower at being helpful.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: servizone-ollama
+    profiles: ["ai"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      # The image has no curl, but it does have the ollama binary.
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  storage:
+  ollama:

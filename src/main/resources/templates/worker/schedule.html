@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My schedule</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <script th:src="@{/js/schedule.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>My schedule</h1>
+                <p>Customers can only book you inside these hours. Times use the marketplace time zone.</p>
+            </div>
+
+            <form class="card card--pad" th:action="@{/worker/schedule}" th:object="${scheduleForm}" method="post" data-loading-on-submit>
+                <h2 style="font-size: var(--fs-lg); letter-spacing: 0;">Weekly working hours</h2>
+                <p class="form-error" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+
+                <div class="week-grid">
+                    <div class="day-row" th:each="d, st : *{days}" data-day-row>
+                        <input type="hidden" th:field="*{days[__${st.index}__].dayOfWeek}">
+                        <label class="day-row__toggle">
+                            <input type="checkbox" th:field="*{days[__${st.index}__].working}" data-day-toggle>
+                            <span th:text="${d.dayLabel}">Monday</span>
+                        </label>
+                        <div class="day-row__times">
+                            <div>
+                                <label class="visually-hidden" th:for="${'start' + st.index}" th:text="${d.dayLabel} + ' start time'">Start</label>
+                                <input class="form-control" type="time" step="900" th:id="${'start' + st.index}"
+                                       th:field="*{days[__${st.index}__].startTime}" data-day-time>
+                                <p class="form-error" th:if="${#fields.hasErrors('days[__${st.index}__].startTime')}"
+                                   th:errors="*{days[__${st.index}__].startTime}"></p>
+                            </div>
+                            <span class="day-row__sep" aria-hidden="true">to</span>
+                            <div>
+                                <label class="visually-hidden" th:for="${'end' + st.index}" th:text="${d.dayLabel} + ' end time'">End</label>
+                                <input class="form-control" type="time" step="900" th:id="${'end' + st.index}"
+                                       th:field="*{days[__${st.index}__].endTime}" data-day-time>
+                                <p class="form-error" th:if="${#fields.hasErrors('days[__${st.index}__].endTime')}"
+                                   th:errors="*{days[__${st.index}__].endTime}"></p>
+                            </div>
+                        </div>
+                        <span class="day-row__off">Not working</span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn--primary" type="submit">Save working hours</button>
+                </div>
+            </form>
+
+            <section class="card card--pad" style="margin-top: 1.5rem;" aria-labelledby="blocked-title">
+                <h2 id="blocked-title" style="font-size: var(--fs-lg); letter-spacing: 0;">Days off and vacation</h2>
+                <p class="form-hint" style="margin-bottom: 1rem;">Block a single day or a range. Customers won't be able to book you on these dates.</p>
+
+                <form th:action="@{/worker/schedule/blocked}" th:object="${blockedForm}" method="post" data-loading-on-submit>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-label" for="fromDate">From</label>
+                            <input class="form-control" type="date" id="fromDate" th:field="*{fromDate}" required>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="toDate">To <span class="text-muted">(optional)</span></label>
+                            <input class="form-control" type="date" id="toDate" th:field="*{toDate}">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label" for="reason">Reason <span class="text-muted">(optional, only you see it)</span></label>
+                        <input class="form-control" type="text" id="reason" th:field="*{reason}" maxlength="100" placeholder="e.g. Eid holiday">
+                    </div>
+                    <button class="btn btn--outline" type="submit">Block dates</button>
+                </form>
+
+                <ul class="blocked-list" th:if="${!blockedDates.isEmpty()}">
+                    <li th:each="b : ${blockedDates}">
+                        <span>
+                            <strong th:text="${b.label}">Mon, 12 Oct 2026</strong>
+                            <small class="text-muted" th:if="${b.reason != null}" th:text="${b.reason}">Reason</small>
+                        </span>
+                        <form th:action="@{/worker/schedule/blocked/remove}" method="post" data-confirm="Make this date available again?">
+                            <input type="hidden" name="date" th:value="${b.date}">
+                            <button class="btn btn--ghost btn--sm" type="submit">Remove</button>
+                        </form>
+                    </li>
+                </ul>
+                <p class="form-hint" style="margin-top: 1rem;" th:if="${blockedDates.isEmpty()}">No upcoming days off.</p>
+            </section>
+        </div>
+    </section>
+</main>
+</body>
+</html>

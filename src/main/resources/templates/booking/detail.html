@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Booking details</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+        <script th:src="@{/js/media.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head page-head--row">
+                <div>
+                    <h1>Booking details</h1>
+                    <p>Reference <strong th:text="${#strings.substring(booking.id, #strings.length(booking.id) - 8)}">ABCD1234</strong></p>
+                </div>
+                <span class="badge" th:classappend="'badge--' + ${booking.statusTone}" th:text="${booking.statusLabel}">Status</span>
+            </div>
+
+            <div class="booking-detail">
+                <section class="card card--pad" aria-labelledby="when-title">
+                    <h2 id="when-title" style="font-size: var(--fs-lg); letter-spacing: 0;">Service and time</h2>
+                    <dl class="detail-grid">
+                        <div><dt>Service</dt><dd><a th:href="@{/services/{slug}(slug=${booking.serviceSlug})}" th:text="${booking.serviceTitle}">Service</a></dd></div>
+                        <div><dt>Professional</dt><dd th:text="${booking.workerName}">Worker</dd></div>
+                        <div><dt>Date</dt><dd th:text="${booking.dateLabel}">Mon, 12 Oct 2026</dd></div>
+                        <div><dt>Time</dt><dd th:text="${booking.timeLabel}">9:00 AM - 10:00 AM</dd></div>
+                        <div><dt>Address</dt><dd th:text="${booking.address}">Address</dd></div>
+                        <div th:if="${booking.customerNote != null}"><dt>Your note</dt><dd th:text="${booking.customerNote}">Note</dd></div>
+                        <div><dt>Requested on</dt><dd th:text="${booking.createdOn}">date</dd></div>
+                    </dl>
+                </section>
+
+                <section class="card card--pad" aria-labelledby="pay-title">
+                    <h2 id="pay-title" style="font-size: var(--fs-lg); letter-spacing: 0;">Cash payment</h2>
+                    <dl class="summary-lines">
+                        <div><dt>Service price</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(booking.servicePrice, 1, 'COMMA', 2, 'POINT')}">800.00</span></dd></div>
+                        <div><dt>Platform fee</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(booking.platformFee, 1, 'COMMA', 2, 'POINT')}">40.00</span></dd></div>
+                    </dl>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <strong>&#2547;<span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')}">840.00</span></strong>
+                    </div>
+                    <p class="summary-note" style="margin-top: 1rem;">
+                        <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                        <span>Method: Cash &middot; Status: <strong th:text="${booking.paymentLabel}">Cash due</strong>.
+                            Pay the professional directly after the service.</span>
+                    </p>
+                </section>
+
+                <section class="card card--pad" aria-labelledby="review-title"
+                         th:if="${review != null or booking.bookingStatus.name() == 'COMPLETED'}">
+                    <h2 id="review-title" style="font-size: var(--fs-lg); letter-spacing: 0;">Your review</h2>
+
+                    <th:block th:if="${review != null}">
+                        <div class="review-card__stars" role="img" th:attr="aria-label=${review.rating + ' out of 5 stars'}" style="margin-bottom: 0.5rem;">
+                            <i class="bi" th:each="n : ${#numbers.sequence(1, 5)}"
+                               th:classappend="${n <= review.rating} ? 'bi-star-fill' : 'bi-star'" aria-hidden="true"></i>
+                        </div>
+                        <p th:if="${review.comment != null}" th:text="${review.comment}" style="color: var(--navy-900);">Comment</p>
+                        <p class="form-hint">Published on <span th:text="${review.dateLabel}">date</span>. Thank you for your feedback.</p>
+                    </th:block>
+
+                    <form th:if="${review == null}" th:action="@{/review/{id}(id=${booking.id})}" method="post" data-loading-on-submit>
+                        <p class="form-hint" style="margin-top: 0;">How was the service? Your review helps other customers.</p>
+                        <fieldset class="star-input">
+                            <legend class="visually-hidden">Your rating</legend>
+                            <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 stars"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">5 stars</span></label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">4 stars</span></label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">3 stars</span></label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">2 stars</span></label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"><i class="bi bi-star-fill" aria-hidden="true"></i><span class="visually-hidden">1 star</span></label>
+                        </fieldset>
+                        <div class="form-field" style="margin-top: 1rem;">
+                            <label class="form-label" for="comment">Comment <span class="text-muted">(optional)</span></label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" maxlength="1000"
+                                      placeholder="What went well? Anything to improve?"></textarea>
+                        </div>
+                        <button class="btn btn--primary" type="submit">Publish review</button>
+                    </form>
+                </section>
+
+                <div class="job-card__actions" style="margin-top: 0;">
+                    <form th:if="${booking.canCancel}" th:action="@{/booking/{id}/cancel(id=${booking.id})}" method="post"
+                          data-confirm="Cancel this booking?">
+                        <button class="btn btn--outline" type="submit">Cancel booking</button>
+                    </form>
+                    <a class="btn btn--primary" th:href="@{/customer/bookings}">My bookings</a>
+                    <a class="btn btn--ghost" th:href="@{/services/{slug}(slug=${booking.serviceSlug})}">View service</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

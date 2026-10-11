@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="${service.title} + ' in ' + ${service.location} + ' | ' + ${@environment.getProperty('app.name', 'ServiZone')}">Service</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" th:content="${#strings.abbreviate(service.description, 155)}">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <meta property="og:type" content="website">
+        <meta property="og:title" th:content="${service.title}">
+        <meta property="og:description" th:content="${#strings.abbreviate(service.description, 155)}">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/service-detail.css}">
+        <style>
+            /* ServiZone — ReUI-style. Scoped so nothing outside this page is affected. */
+            .dp {
+                --dp-fg: #0a0a0a; --dp-muted: #737373; --dp-border: #e5e5e5; --dp-border-strong: #d4d4d4;
+                --dp-soft: #fafafa; --dp-hover: #f5f5f5; --dp-ink: #171717; --dp-radius: 8px; --dp-radius-lg: 12px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--dp-fg);
+            }
+            .dp h1, .dp h2, .dp h3, .dp h4 { font-family: inherit; font-weight: 600; letter-spacing: -.02em; color: var(--dp-fg); }
+            .dp p { color: var(--dp-muted); }
+            .dp :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--dp-ink); }
+            .dp .text-muted { color: var(--dp-muted); }
+
+            /* Buttons */
+            .dp .btn {
+                min-height: 36px; padding: 0 14px; font-size: 14px; font-weight: 500;
+                border-width: 1px; border-radius: var(--dp-radius); box-shadow: none;
+            }
+            .dp .btn--sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+            .dp .btn--lg { min-height: 40px; padding: 0 20px; font-size: 14px; }
+            .dp .btn--primary { background: var(--dp-ink); border-color: var(--dp-ink); color: #fff; }
+            .dp .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+            .dp .btn--outline { background: #fff; border-color: var(--dp-border); color: var(--dp-fg); }
+            .dp .btn--outline:hover { background: var(--dp-hover); border-color: var(--dp-border-strong); box-shadow: none; }
+            .dp .btn--ghost { background: transparent; border-color: transparent; color: var(--dp-muted); }
+            .dp .btn--ghost:hover { background: var(--dp-hover); color: var(--dp-fg); }
+            .dp .btn[data-favorite].is-active { border-color: #dc2626; color: #dc2626; }
+            .dp .btn[data-favorite].is-active i { color: #dc2626; }
+
+            /* Forms */
+            .dp .form-field { margin-bottom: 14px; }
+            .dp .form-label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--dp-fg); }
+            .dp .form-control {
+                display: block; width: 100%; min-height: 36px; padding: 0 12px;
+                font: inherit; font-size: 14px; color: var(--dp-fg); background: #fff;
+                border: 1px solid var(--dp-border); border-radius: var(--dp-radius); box-shadow: none; outline: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .dp .form-control--sm { min-height: 32px; width: auto; font-size: 13px; }
+            .dp .form-control::placeholder { color: #a3a3a3; }
+            .dp .form-control:focus { border-color: #a3a3a3; box-shadow: 0 0 0 3px rgba(0, 0, 0, .06); }
+            .dp .form-hint { font-size: 13px; color: var(--dp-muted); }
+
+            /* Badges */
+            .dp .badge {
+                display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px;
+                font-size: 12px; font-weight: 500; white-space: nowrap; color: #404040; text-decoration: none;
+                background: var(--dp-hover); border: 1px solid var(--dp-border); border-radius: 999px;
+            }
+            .dp .badge--orange-soft, .dp .badge--orange { background: var(--dp-hover); border-color: var(--dp-border); color: #404040; }
+            .dp a.badge--orange-soft:hover { background: var(--dp-border); color: var(--dp-fg); }
+            .dp .badge--green { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+
+            /* Cards */
+            .dp .card {
+                background: #fff; border: 1px solid var(--dp-border); border-radius: var(--dp-radius-lg);
+                box-shadow: none;
+            }
+            .dp .card--pad { padding: 20px; }
+
+            /* Service cards (shared fragment) */
+            .dp .service-card { background: #fff; border: 1px solid var(--dp-border); border-radius: var(--dp-radius-lg); box-shadow: none; }
+            .dp .service-card:hover { border-color: var(--dp-border-strong); box-shadow: none; transform: none; }
+            .dp .service-card:focus-within { border-color: #a3a3a3; box-shadow: none; }
+            .dp .service-card:hover .service-card__media img { transform: none; }
+            .dp .service-card__media { background: var(--dp-hover); color: #a3a3a3; border-bottom: 1px solid var(--dp-border); }
+            .dp .service-card__body { padding: 14px 16px 16px; }
+            .dp .service-card__title { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+            .dp .service-card__category, .dp .service-card__location { font-size: 12px; color: var(--dp-muted); }
+            .dp .price { font-size: 15px; font-weight: 600; color: var(--dp-fg); }
+            .dp .price__unit { color: var(--dp-muted); }
+            .dp .fav-btn {
+                inset: 8px auto auto 8px; width: 32px; height: 32px; border-radius: var(--dp-radius);
+                background: #fff; border: 1px solid var(--dp-border); color: var(--dp-ink); box-shadow: none; font-size: 15px;
+            }
+            .dp .fav-btn:hover { background: var(--dp-hover); color: var(--dp-ink); transform: none; }
+            .dp .fav-btn.is-active { background: #fff; color: #dc2626; }
+
+            /* Review cards (shared fragment) */
+            .dp .review-card { padding: 20px; background: #fff; border: 1px solid var(--dp-border); border-radius: var(--dp-radius-lg); box-shadow: none; }
+            .dp .review-card:hover { box-shadow: none; transform: none; border-color: var(--dp-border-strong); }
+            .dp .review-card__text { font-size: 14px; line-height: 1.6; color: var(--dp-fg); }
+            .dp .review-card__author span:not(.avatar) { color: var(--dp-muted); }
+            .dp .avatar { background: var(--dp-hover); color: var(--dp-ink); border: 1px solid var(--dp-border); font-weight: 600; }
+
+            /* Empty state */
+            .dp .empty-state {
+                padding: 40px 16px; text-align: center; background: transparent;
+                border: 1px dashed var(--dp-border-strong); border-radius: var(--dp-radius-lg);
+            }
+            .dp .empty-state > i { font-size: 22px; color: var(--dp-muted); }
+            .dp .empty-state h3 { margin: 10px 0 4px; font-size: 15px; }
+            .dp .empty-state p { margin: 0 0 16px; font-size: 13px; }
+
+            /* Breadcrumb */
+            .dp .breadcrumb { font-size: 13px; color: var(--dp-muted); }
+            .dp .breadcrumb a { color: var(--dp-muted); text-decoration: none; }
+            .dp .breadcrumb a:hover { color: var(--dp-fg); text-decoration: underline; }
+            .dp .breadcrumb li[aria-current="page"] { color: var(--dp-fg); font-weight: 500; }
+
+            /* Gallery */
+            .dp .gallery {
+                overflow: hidden; background: var(--dp-hover); color: #a3a3a3;
+                border: 1px solid var(--dp-border); border-radius: var(--dp-radius-lg); box-shadow: none;
+            }
+            .dp .gallery-thumb {
+                overflow: hidden; background: #fff; padding: 0;
+                border: 1px solid var(--dp-border); border-radius: var(--dp-radius); box-shadow: none;
+            }
+            .dp .gallery-thumb:hover { border-color: var(--dp-border-strong); }
+            .dp .gallery-thumb.is-active { border-color: var(--dp-ink); box-shadow: 0 0 0 1px var(--dp-ink); }
+
+            /* Title block */
+            .dp .detail-head h1 { font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem); font-weight: 600; letter-spacing: -.03em; }
+            .dp .detail-meta { font-size: 14px; color: var(--dp-muted); }
+            .dp .detail-meta i { color: var(--dp-muted); }
+            .dp .detail-meta .rating { color: var(--dp-fg); font-weight: 500; }
+            .dp .detail-meta .rating i { color: #f59e0b; }
+            .dp .rating__count { font-weight: 400; color: var(--dp-muted); }
+
+            /* Content sections */
+            .dp .detail-section h2 { margin: 0 0 12px; font-size: 16px; }
+            .dp .detail-section p { font-size: 14px; line-height: 1.6; }
+            .dp .prose { color: var(--dp-fg); }
+            .dp .checklist i { color: var(--dp-ink); }
+            .dp .checklist li { font-size: 14px; color: var(--dp-fg); }
+            .dp .detail-section .bi-geo-alt { color: var(--dp-muted); }
+
+            .dp .hours-list { margin: 0; padding: 0; list-style: none; }
+            .dp .hours-list li {
+                display: flex; justify-content: space-between; gap: 12px; padding: 8px 0;
+                font-size: 14px; color: var(--dp-fg); border-bottom: 1px solid var(--dp-border);
+            }
+            .dp .hours-list li:last-child { border-bottom: 0; }
+            .dp .hours-list li strong { font-weight: 500; }
+            .dp .hours-list li.is-closed, .dp .hours-list li.is-closed strong { color: var(--dp-muted); }
+
+            /* Professional */
+            .dp .worker-summary__avatar {
+                overflow: hidden; background: var(--dp-hover); color: var(--dp-ink);
+                border: 1px solid var(--dp-border); font-weight: 600;
+            }
+            .dp .worker-summary__info h3 { margin: 0 0 2px; font-size: 16px; letter-spacing: -.01em; }
+            .dp .worker-summary__info p { margin: 0 0 8px; font-size: 14px; }
+            .dp .worker-summary__meta { font-size: 13px; color: var(--dp-muted); }
+
+            /* Booking card (desktop) and bar (mobile) */
+            .dp .booking-card { padding: 20px; }
+            .dp .booking-card__price strong { font-size: 1.75rem; font-weight: 600; letter-spacing: -.02em; color: var(--dp-fg); }
+            .dp .booking-card__price > span { color: var(--dp-muted); font-size: 13px; }
+            .dp .facts { margin: 16px 0; }
+            .dp .facts > div {
+                display: flex; justify-content: space-between; gap: 12px; padding: 10px 0;
+                border-bottom: 1px solid var(--dp-border); font-size: 14px;
+            }
+            .dp .facts > div:last-child { border-bottom: 0; }
+            .dp .facts dt { color: var(--dp-muted); }
+            .dp .facts dd { margin: 0; font-weight: 500; color: var(--dp-fg); }
+            .dp .booking-card__actions { display: grid; gap: 8px; }
+            .dp .booking-card__note { margin: 16px 0 0; font-size: 13px; color: var(--dp-muted); }
+            .dp .booking-card__note i { color: var(--dp-muted); }
+
+            .dp .booking-bar { background: #fff; border-top: 1px solid var(--dp-border); box-shadow: none; }
+            .dp .booking-bar__price strong { font-size: 1.125rem; font-weight: 600; color: var(--dp-fg); }
+            .dp .booking-bar__price span { color: var(--dp-muted); font-size: 12px; }
+        </style>
+        <script th:src="@{/js/media.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main class="detail-page dp">
+    <section class="section" style="padding-bottom: 0;">
+        <div class="container">
+            <nav aria-label="Breadcrumb">
+                <ol class="breadcrumb" style="list-style: none; padding: 0;">
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/services}">Services</a></li>
+                    <li><a th:href="@{/services(category=${categorySlug})}" th:text="${service.categoryName}">Category</a></li>
+                    <li aria-current="page" th:text="${service.title}">Service</li>
+                </ol>
+            </nav>
+
+            <div class="detail-layout">
+                <div class="detail-stack">
+                    <!-- Gallery -->
+                    <div class="gallery" th:if="${service.primaryImageUrl != null}">
+                        <img th:src="@{${service.primaryImageUrl}}" th:alt="${service.title}" data-gallery-main>
+                    </div>
+                    <div class="gallery" th:unless="${service.primaryImageUrl != null}" th:classappend="'tone-' + ${service.tone}"
+                         role="img" th:attr="aria-label=${service.title}">
+                        <i class="bi" th:classappend="${service.icon}" aria-hidden="true"></i>
+                    </div>
+                    <ul class="gallery-thumbs" th:if="${service.images.size() > 1}" aria-label="More photos">
+                        <li th:each="img, st : ${service.images}">
+                            <button class="gallery-thumb" type="button" th:classappend="${st.first} ? 'is-active'"
+                                    data-gallery-thumb th:attr="data-src=@{${img.url}}, aria-label=${'Show photo ' + st.count}">
+                                <img th:src="@{${img.url}}" alt="" loading="lazy">
+                            </button>
+                        </li>
+                    </ul>
+
+                    <header class="detail-head">
+                        <div class="detail-head__badges">
+                            <a class="badge badge--orange-soft" th:href="@{/services(category=${categorySlug})}" th:text="${service.categoryName}">Category</a>
+                            <span class="badge badge--green" th:if="${worker.verified}">
+                                <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified professional
+                            </span>
+                        </div>
+                        <h1 th:text="${service.title}">Service title</h1>
+                        <div class="detail-meta">
+                            <span class="rating" th:if="${service.reviewCount > 0}">
+                                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                <span th:text="${#numbers.formatDecimal(service.rating, 1, 'COMMA', 1, 'POINT')}">4.9</span>
+                                <span class="rating__count" th:text="'(' + ${service.reviewCount} + ' reviews)'">(10 reviews)</span>
+                            </span>
+                            <span class="badge badge--orange-soft" th:unless="${service.reviewCount > 0}">New</span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i><span th:text="${service.durationLabel}">1 hour</span></span>
+                            <span><i class="bi bi-geo-alt" aria-hidden="true"></i><span th:text="${service.location}">Mirpur</span></span>
+                        </div>
+                    </header>
+
+                    <section class="card card--pad detail-section" aria-labelledby="about-title">
+                        <h2 id="about-title">About this service</h2>
+                        <p class="prose" th:text="${service.description}">Description</p>
+                    </section>
+
+                    <section class="card card--pad detail-section" th:if="${!service.includes.isEmpty()}" aria-labelledby="included-title">
+                        <h2 id="included-title">What's included</h2>
+                        <ul class="checklist">
+                            <li th:each="item : ${service.includes}">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                <span th:text="${item}">Included item</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="card card--pad detail-section" aria-labelledby="area-title">
+                        <h2 id="area-title">Service area</h2>
+                        <p>
+                            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                            <strong th:text="${service.location}">Mirpur</strong>
+                            <span th:if="${service.serviceRadiusKm > 0}"> &middot; within about <span th:text="${service.serviceRadiusKm}">10</span> km</span>
+                        </p>
+                    </section>
+
+                    <section class="card card--pad detail-section" aria-labelledby="availability-title">
+                        <h2 id="availability-title">Availability</h2>
+                        <ul class="hours-list" th:if="${!weeklyHours.isEmpty()}">
+                            <li th:each="h : ${weeklyHours}" th:classappend="${!h.working} ? 'is-closed'">
+                                <span th:text="${h.dayLabel}">Monday</span>
+                                <strong th:text="${h.hoursLabel}">9:00 AM - 5:00 PM</strong>
+                            </li>
+                        </ul>
+                        <p class="form-hint" th:if="${weeklyHours.isEmpty()}">This professional hasn't published working hours yet.</p>
+                        <p style="margin-top: 1rem;">You choose the date and time when you book. Free time slots are checked live at that step, so you only see what is really available.</p>
+                    </section>
+
+                    <section class="card card--pad detail-section" aria-labelledby="worker-title">
+                        <h2 id="worker-title">About the professional</h2>
+                        <div class="worker-summary" th:classappend="'tone-' + ${worker.tone}">
+                            <span class="worker-summary__avatar" aria-hidden="true">
+                                <img th:if="${worker.profileImageUrl != null}" th:src="@{${worker.profileImageUrl}}" alt="">
+                                <th:block th:unless="${worker.profileImageUrl != null}"
+                                          th:text="${#strings.toUpperCase(#strings.substring(worker.name, 0, 1))}">R</th:block>
+                            </span>
+                            <div class="worker-summary__info">
+                                <h3 th:text="${worker.name}">Worker name</h3>
+                                <p th:text="${worker.profession}">Profession</p>
+                                <div class="worker-summary__meta">
+                                    <span class="badge badge--green" th:if="${worker.verified}"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>
+                                    <span><span th:text="${worker.experienceYears}">5</span> yrs experience</span>
+                                    <span><span th:text="${worker.completedJobs}">0</span> jobs completed</span>
+                                </div>
+                            </div>
+                            <a class="btn btn--outline btn--sm" th:href="@{/workers/{slug}(slug=${worker.slug})}">View profile</a>
+                        </div>
+                    </section>
+
+                    <section class="card card--pad detail-section" aria-labelledby="reviews-title">
+                        <h2 id="reviews-title">Reviews</h2>
+                        <div class="empty-state" style="padding: 2rem 1rem;" th:if="${reviews.isEmpty()}">
+                            <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+                            <h3>No reviews yet</h3>
+                            <p>Reviews appear here after customers complete a booking.</p>
+                        </div>
+                        <p class="form-hint" th:if="${!reviews.isEmpty()}">
+                            <span th:text="${service.reviewCount}">0</span> review(s), average
+                            <strong th:text="${#numbers.formatDecimal(service.rating, 1, 'COMMA', 1, 'POINT')}">4.9</strong> out of 5.
+                            Showing the latest <span th:text="${reviews.size()}">1</span>.
+                        </p>
+                        <div class="review-grid" th:if="${!reviews.isEmpty()}">
+                            <th:block th:each="review : ${reviews}">
+                                <article th:replace="~{fragments/cards :: reviewCard(${review})}"></article>
+                            </th:block>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sticky booking card (desktop) -->
+                <aside class="card card--pad booking-card" aria-label="Booking">
+                    <div class="booking-card__price">
+                        <strong>&#2547;<span th:text="${#numbers.formatInteger(service.price, 1, 'COMMA')}" style="font-size: inherit; color: inherit;">800</span></strong>
+                        <span th:text="${service.priceType.label} + ' · ' + ${service.priceUnit}">Fixed price</span>
+                    </div>
+                    <dl class="facts">
+                        <div><dt>Duration</dt><dd th:text="${service.durationLabel}">1 hour</dd></div>
+                        <div><dt>Area</dt><dd th:text="${service.location}">Mirpur</dd></div>
+                        <div><dt>Payment</dt><dd>Cash</dd></div>
+                    </dl>
+                    <div class="booking-card__actions">
+                        <a class="btn btn--primary btn--lg btn--block" sec:authorize="!isAuthenticated() or hasRole('CUSTOMER')"
+                           th:href="@{/booking/new(service=${service.slug})}">Book now</a>
+                        <p class="form-hint" sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')">Booking is available to customer accounts.</p>
+                        <button class="btn btn--outline btn--block" type="button" data-favorite
+                                sec:authorize="!isAuthenticated() or hasRole('CUSTOMER')"
+                                th:attr="data-service-id=${service.id}, aria-pressed='false'">
+                            <i class="bi bi-heart" aria-hidden="true"></i> <span data-favorite-text>Save for later</span>
+                        </button>
+                    </div>
+                    <p class="booking-card__note">
+                        <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                        <span>Pay in cash after the service is done. No online payment.</span>
+                    </p>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking bar (mobile) -->
+    <div class="booking-bar" role="region" aria-label="Booking">
+        <div class="booking-bar__price">
+            <strong>&#2547;<span th:text="${#numbers.formatInteger(service.price, 1, 'COMMA')}" style="font-size: inherit; color: inherit;">800</span></strong>
+            <span th:text="${service.priceUnit}">per service</span>
+        </div>
+        <a class="btn btn--primary" sec:authorize="!isAuthenticated() or hasRole('CUSTOMER')"
+           th:href="@{/booking/new(service=${service.slug})}">Book now</a>
+        <span class="form-hint" sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')">Customer accounts only</span>
+    </div>
+</main>
+</body>
+</html>

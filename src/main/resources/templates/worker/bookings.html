@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Bookings</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+        <script th:src="@{/js/media.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>Bookings</h1>
+                <p>Answer requests, run your jobs and record cash payments.</p>
+            </div>
+
+            <nav class="status-tabs" aria-label="Booking tabs">
+                <a class="status-tab" th:each="f : ${filters}"
+                   th:classappend="${f.name() == currentTab} ? 'is-active'"
+                   th:href="@{/worker/bookings(tab=${f.name()})}">
+                    <span th:text="${f.label}">Requests</span>
+                    <small th:text="${counts[f.name()]}">0</small>
+                </a>
+            </nav>
+
+            <div class="job-list" th:if="${!bookings.isEmpty()}">
+                <article class="card job-card" th:each="b : ${bookings.content}">
+                    <div class="job-card__head">
+                        <div>
+                            <h2 th:text="${b.serviceTitle}">Service</h2>
+                            <p>for <strong th:text="${b.customerName}">Customer</strong></p>
+                        </div>
+                        <span class="badge" th:classappend="'badge--' + ${b.statusTone}" th:text="${b.statusLabel}">Status</span>
+                    </div>
+
+                    <dl class="detail-grid">
+                        <div><dt>Date</dt><dd th:text="${b.dateLabel}">date</dd></div>
+                        <div><dt>Time</dt><dd th:text="${b.timeLabel}">time</dd></div>
+                        <div><dt>Address</dt><dd th:text="${b.address}">address</dd></div>
+                        <div th:if="${b.customerPhone != null}"><dt>Customer phone</dt><dd th:text="${b.customerPhone}">phone</dd></div>
+                        <div><dt>Collect in cash</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 'COMMA', 2, 'POINT')}">840.00</span></dd></div>
+                        <div><dt>Platform fee included</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(b.platformFee, 1, 'COMMA', 2, 'POINT')}">40.00</span></dd></div>
+                        <div><dt>Payment</dt><dd th:text="${b.paymentLabel}">Cash due</dd></div>
+                    </dl>
+                    <p class="job-card__note" th:if="${b.customerNote != null}">
+                        <strong>Customer note:</strong> <span th:text="${b.customerNote}">note</span>
+                    </p>
+                    <p class="form-hint" style="margin-top: 0.75rem;" th:if="${b.customerPhone == null and b.bookingStatus.name() == 'PENDING'}">
+                        The customer's phone number is shown after you accept.
+                    </p>
+
+                    <div class="job-card__actions">
+                        <th:block th:switch="${b.bookingStatus.name()}">
+                            <th:block th:case="'PENDING'">
+                                <form th:action="@{/worker/bookings/{id}/accept(id=${b.id})}" method="post">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--primary btn--sm" type="submit">Accept</button>
+                                </form>
+                                <form th:action="@{/worker/bookings/{id}/reject(id=${b.id})}" method="post" data-confirm="Decline this request?">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--outline btn--sm" type="submit">Decline</button>
+                                </form>
+                            </th:block>
+                            <th:block th:case="'WORKER_ACCEPTED'">
+                                <form th:action="@{/worker/bookings/{id}/start(id=${b.id})}" method="post">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--primary btn--sm" type="submit">Start job</button>
+                                </form>
+                                <form th:action="@{/worker/bookings/{id}/cancel(id=${b.id})}" method="post" data-confirm="Cancel this confirmed booking? The customer will be told.">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--outline btn--sm" type="submit">Cancel booking</button>
+                                </form>
+                            </th:block>
+                            <th:block th:case="'IN_PROGRESS'">
+                                <form th:action="@{/worker/bookings/{id}/complete(id=${b.id})}" method="post">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--primary btn--sm" type="submit">Mark completed</button>
+                                </form>
+                            </th:block>
+                            <th:block th:case="'COMPLETED'">
+                                <form th:if="${b.paymentStatus.name() == 'PENDING'}" th:action="@{/worker/bookings/{id}/cash-received(id=${b.id})}" method="post"
+                                      data-confirm="Confirm that you received the full cash amount?">
+                                    <input type="hidden" name="tab" th:value="${currentTab}">
+                                    <button class="btn btn--primary btn--sm" type="submit"><i class="bi bi-cash-coin" aria-hidden="true"></i> Cash received</button>
+                                </form>
+                                <span class="badge badge--green" th:if="${b.paymentStatus.name() == 'PAID'}">Paid in cash</span>
+                            </th:block>
+                        </th:block>
+                    </div>
+                </article>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: paginationQuery(${bookings}, '/worker/bookings', ${'tab=' + currentTab})}"></div>
+
+            <div class="empty-state" th:if="${bookings.isEmpty()}">
+                <i class="bi bi-inbox" aria-hidden="true"></i>
+                <h3>Nothing here</h3>
+                <p>No bookings in this tab right now.</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

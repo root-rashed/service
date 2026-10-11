@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Log in</title>
+    <th:block th:fragment="extraHead">
+        <link rel="stylesheet" th:href="@{/css/auth.css}">
+        <style>
+            /* ServiZone login — ReUI-style card. Scoped with the .rl- prefix so it won't clash with auth.css. */
+            .rl-page {
+                --rl-fg: #0a0a0a;
+                --rl-muted: #737373;
+                --rl-border: #e5e5e5;
+                --rl-radius: 8px;
+                display: flex;
+                justify-content: center;
+                padding: 56px 16px 72px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--rl-fg);
+            }
+
+            .rl-card {
+                width: 100%;
+                max-width: 360px;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                padding: 0;
+                text-align: center;
+            }
+
+            .rl-logo {
+                width: 32px;
+                height: 32px;
+                margin: 0 auto 18px;
+                display: grid;
+                place-items: center;
+                border-radius: 9px;
+                background: #171717;
+                color: #fff;
+            }
+
+            .rl-title {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+                line-height: 1.3;
+                letter-spacing: -.01em;
+                color: var(--rl-fg);
+            }
+
+            .rl-sub {
+                margin: 6px 0 22px;
+                font-size: 14px;
+                color: var(--rl-muted);
+            }
+
+            .rl-card .alert { text-align: left; margin-bottom: 14px; font-size: 13px; }
+
+            /* Fields */
+            .rl-field { text-align: left; margin-bottom: 14px; }
+
+            .rl-label-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .rl-label {
+                display: block;
+                margin-bottom: 7px;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--rl-fg);
+            }
+            .rl-label-row .rl-label { margin-bottom: 7px; }
+
+            .rl-forgot {
+                margin-bottom: 7px;
+                font-size: 12px;
+                color: var(--rl-muted);
+                text-decoration: none;
+            }
+            .rl-forgot:hover { color: var(--rl-fg); text-decoration: underline; }
+
+            .rl-input-wrap { position: relative; }
+
+            .rl-input {
+                display: block;
+                width: 100%;
+                height: 32px;
+                padding: 0 12px;
+                font: inherit;
+                font-size: 14px;
+                color: var(--rl-fg);
+                background: #fff;
+                border: 1px solid var(--rl-border);
+                border-radius: var(--rl-radius);
+                outline: none;
+                box-shadow: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .rl-input::placeholder { color: #8a8a8a; }
+            .rl-input:focus {
+                border-color: #a3a3a3;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+            }
+            .rl-input-wrap .rl-input { padding-right: 38px; }
+
+            .rl-eye {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 36px;
+                height: 100%;
+                display: grid;
+                place-items: center;
+                border: 0;
+                background: none;
+                color: var(--rl-muted);
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .rl-eye:hover { color: var(--rl-fg); }
+
+            /* Buttons */
+            .rl-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 32px;
+                padding: 0 14px;
+                font: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--rl-radius);
+                border: 1px solid transparent;
+                cursor: pointer;
+                text-decoration: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .rl-btn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+
+            .rl-btn--primary {
+                width: 100%;
+                margin-top: 6px;
+                background: #171717;
+                border-color: #171717;
+                color: #fff;
+            }
+            .rl-btn--primary:hover { background: #2b2b2b; }
+
+            .rl-btn--outline {
+                flex: 1;
+                background: #fff;
+                border-color: var(--rl-border);
+                color: var(--rl-fg);
+            }
+            .rl-btn--outline:hover { background: #f5f5f5; }
+
+            /* Divider */
+            .rl-divider {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 22px 0;
+                font-size: 12px;
+                color: var(--rl-muted);
+            }
+            .rl-divider::before,
+            .rl-divider::after {
+                content: "";
+                flex: 1;
+                height: 1px;
+                background: var(--rl-border);
+            }
+
+            .rl-social { display: flex; gap: 12px; }
+
+            .rl-foot {
+                margin: 22px 0 0;
+                font-size: 14px;
+                color: var(--rl-muted);
+            }
+            .rl-signup {
+                margin-left: 2px;
+                font-weight: 500;
+                color: var(--rl-fg);
+                text-decoration: none;
+            }
+            .rl-signup:hover { text-decoration: underline; }
+
+            @media (max-width: 420px) {
+                .rl-page { padding-top: 36px; }
+            }
+            /* Demo access (remove before going live) */
+            .rl-demo { margin-top: 22px; text-align: left; }
+            .rl-demo__title {
+                margin: 0 0 8px;
+                font-size: 12px;
+                color: var(--rl-muted);
+                text-align: center;
+            }
+            .rl-demo__row { display: flex; gap: 8px; }
+            .rl-demo__btn {
+                flex: 1;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                height: 36px;
+                padding: 0 10px;
+                font: inherit;
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--rl-fg);
+                background: #fff;
+                border: 1px solid var(--rl-border);
+                border-radius: var(--rl-radius);
+                cursor: pointer;
+                transition: background-color .15s, border-color .15s;
+            }
+            .rl-demo__btn:hover { background: #f5f5f5; }
+            .rl-demo__btn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+            .rl-demo__btn i { color: var(--rl-muted); }
+
+        </style>
+    </th:block>
+</head>
+
+<body>
+<main class="rl-page">
+    <section class="rl-card" aria-labelledby="login-title">
+
+<!--        <div class="rl-logo" aria-hidden="true">-->
+<!--            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"-->
+<!--                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">-->
+<!--                <path d="M7 5v8a5 5 0 0 0 10 0V5"/>-->
+<!--            </svg>-->
+<!--        </div>-->
+
+        <h1 id="login-title" class="rl-title">Sign in to ServiZone</h1>
+        <p class="rl-sub">Welcome back.</p>
+
+        <div class="alert alert--error" role="alert" th:if="${param.error}">
+            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+            <span>Incorrect email or password. Check both and try again.</span>
+        </div>
+        <div class="alert alert--warning" role="alert" th:if="${param.locked}">
+            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+            <span>Too many failed attempts. This account is locked for a few minutes. Try again later or reset your password.</span>
+        </div>
+        <div class="alert alert--error" role="alert" th:if="${param.suspended}">
+            <i class="bi bi-slash-circle-fill" aria-hidden="true"></i>
+            <span>This account is not active. Contact support for help.</span>
+        </div>
+
+        <form th:action="@{/login}" method="post" data-loading-on-submit>
+            <div class="rl-field">
+                <label class="rl-label" for="email">Email</label>
+                <input class="rl-input" type="email" id="email" name="email" required
+                       autocomplete="email" placeholder="Email">
+            </div>
+
+            <div class="rl-field">
+                <div class="rl-label-row">
+                    <label class="rl-label" for="password">Password</label>
+                    <a class="rl-forgot" th:href="@{/forgot-password}">Forgot password?</a>
+                </div>
+                <div class="rl-input-wrap">
+                    <input class="rl-input" type="password" id="password" name="password" required
+                           autocomplete="current-password" placeholder="Enter your password">
+                    <button class="rl-eye" type="button" data-toggle-password="#password" aria-label="Show password">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button class="rl-btn rl-btn--primary" type="submit">Sign in</button>
+        </form>
+
+<!--        <div class="rl-divider"><span>Or continue with</span></div>-->
+
+<!--        <div class="rl-social">-->
+<!--            <a class="rl-btn rl-btn&#45;&#45;outline" th:href="@{/oauth2/authorization/google}">-->
+<!--                <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">-->
+<!--                    <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>-->
+<!--                    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/>-->
+<!--                    <path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/>-->
+<!--                    <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>-->
+<!--                </svg>-->
+<!--                <span>Google</span>-->
+<!--            </a>-->
+<!--            <a class="rl-btn rl-btn&#45;&#45;outline" th:href="@{/oauth2/authorization/apple}">-->
+<!--                <svg width="16" height="16" viewBox="0 0 384 512" aria-hidden="true">-->
+<!--                    <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>-->
+<!--                </svg>-->
+<!--                <span>Apple</span>-->
+<!--            </a>-->
+<!--        </div>-->
+        <div class="rl-demo" id="demo-access">
+            <p class="rl-demo__title">Demo access, click to fill</p>
+            <div class="rl-demo__row">
+                <button class="rl-demo__btn" type="button"
+                        data-demo-email="admin@gmail.com" data-demo-password="rashed12345">
+                    <i class="bi bi-shield-lock" aria-hidden="true"></i> Admin
+                </button>
+                <button class="rl-demo__btn" type="button"
+                        data-demo-email="rashedulislam16032019@gmail.com" data-demo-password="rashed12345">
+                    <i class="bi bi-person" aria-hidden="true"></i> Customer
+                </button>
+                <button class="rl-demo__btn" type="button"
+                        data-demo-email="rashedulislam.shajol@gmail.com" data-demo-password="rashed12345">
+                    <i class="bi bi-tools" aria-hidden="true"></i> Worker
+                </button>
+            </div>
+        </div>
+
+        <p class="rl-foot">Need an account? <a class="rl-signup" th:href="@{/register}">Sign up</a></p>
+    </section>
+    <script>
+        (function () {
+            var email = document.getElementById('email');
+            var password = document.getElementById('password');
+            document.querySelectorAll('[data-demo-email]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    email.value = btn.getAttribute('data-demo-email');
+                    password.value = btn.getAttribute('data-demo-password');
+                    email.dispatchEvent(new Event('input', { bubbles: true }));
+                    password.dispatchEvent(new Event('input', { bubbles: true }));
+                    document.querySelector('form[data-loading-on-submit] button[type="submit"]').focus();
+                });
+            });
+        })();
+    </script>
+</main>
+</body>
+</html>

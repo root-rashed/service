@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Saved services</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone Saved services — ReUI-style look. Every rule is scoped under .fv (the <main> class). */
+            .fv {
+                --fv-fg: #0a0a0a;
+                --fv-muted: #737373;
+                --fv-border: #e5e5e5;
+                --fv-hover: #f5f5f5;
+                --fv-primary: #171717;
+                --fv-radius: 8px;
+                --fv-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--fv-fg);
+            }
+            .fv .section { background: transparent; }
+
+            /* Typography */
+            .fv h1,
+            .fv h3 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.01em;
+                color: var(--fv-fg);
+            }
+            .fv p,
+            .fv .page-head p { color: var(--fv-muted); }
+
+            /* Empty state: 1px bordered card, grey icon tile */
+            .fv .empty-state {
+                background: #fff;
+                border: 1px solid var(--fv-border);
+                border-radius: var(--fv-radius-card);
+                box-shadow: none;
+            }
+            .fv .empty-state > i {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+                color: #404040;
+                background: var(--fv-hover);
+                border: 1px solid var(--fv-border);
+                border-radius: var(--fv-radius);
+            }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .fv .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--fv-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .fv .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .fv .btn:focus-visible { outline: 2px solid var(--fv-primary); outline-offset: 2px; }
+            .fv .btn--primary { background: var(--fv-primary); border-color: var(--fv-primary); color: #fff; }
+            .fv .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="fv">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Saved services</h1>
+                <p>Your shortlist. Tap the heart on a card to remove it.</p>
+            </div>
+
+            <div class="service-grid" data-favorites-page th:if="${!favorites.isEmpty()}">
+                <th:block th:each="service : ${favorites.content}">
+                    <article th:replace="~{fragments/cards :: serviceCard(${service})}"></article>
+                </th:block>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: pagination(${favorites}, '/favorites')}"></div>
+
+            <div class="empty-state" th:if="${favorites.isEmpty()}">
+                <i class="bi bi-heart" aria-hidden="true"></i>
+                <h3>No saved services yet</h3>
+                <p>Tap the heart on any service to save it here for later.</p>
+                <a class="btn btn--primary" th:href="@{/services}">Browse services</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

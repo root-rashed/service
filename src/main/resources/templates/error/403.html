@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>You don't have access to this page</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <style>
+            /* ServiZone error page — ReUI-style look. Every rule is scoped under .er (the <main> class). */
+            .er {
+                --er-fg: #0a0a0a;
+                --er-muted: #737373;
+                --er-border: #e5e5e5;
+                --er-hover: #f5f5f5;
+                --er-primary: #171717;
+                --er-radius: 8px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--er-fg);
+            }
+            .er .error-page__code {
+                font-family: inherit;
+                font-weight: 600;
+                color: var(--er-muted);
+                letter-spacing: -.02em;
+            }
+            .er h1 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.01em;
+                color: var(--er-fg);
+            }
+            .er p { color: var(--er-muted); }
+            .er a:not(.btn) {
+                color: var(--er-fg);
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+            .er a:not(.btn):hover { text-decoration-thickness: 2px; }
+            .er .error-page__list { color: var(--er-fg); }
+            .er .error-page__list li { color: var(--er-fg); }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .er .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--er-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .er .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .er .btn:focus-visible { outline: 2px solid var(--er-primary); outline-offset: 2px; }
+            .er .btn--primary { background: var(--er-primary); border-color: var(--er-primary); color: #fff; }
+            .er .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+            .er .btn--outline { background: #fff; border-color: var(--er-border); color: var(--er-fg); }
+            .er .btn--outline:hover { background: var(--er-hover); border-color: var(--er-border); color: var(--er-fg); }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="container error-page er">
+    <div class="error-page__code">403</div>
+    <h1>This page isn't available to you</h1>
+    <p th:if="${!sec:isAuthenticated()}">
+        Please log in with the account that owns this content.
+    </p>
+    <p th:if="${sec:isAuthenticated()}">
+        Your account doesn't have permission to view this page. If you think this is a mistake,
+        please contact us.
+    </p>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
+        <a class="btn btn--primary" th:if="${!sec:isAuthenticated()}" th:href="@{/login}">Log in</a>
+        <a class="btn btn--outline" th:href="@{/services}">Browse services</a>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>My reviews</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container container--narrow">
+            <div class="page-head">
+                <h1>My reviews</h1>
+                <p th:if="${profile != null and profile.reviewCount > 0}">
+                    <strong th:text="${#numbers.formatDecimal(profile.rating, 1, 'COMMA', 1, 'POINT')}">4.9</strong> out of 5
+                    from <span th:text="${profile.reviewCount}">0</span> review(s).
+                </p>
+                <p th:unless="${profile != null and profile.reviewCount > 0}">What customers say about your work.</p>
+            </div>
+
+            <div class="review-grid" th:if="${!reviews.isEmpty()}" style="grid-template-columns: 1fr;">
+                <th:block th:each="review : ${reviews.content}">
+                    <article th:replace="~{fragments/cards :: reviewCard(${review})}"></article>
+                </th:block>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: pagination(${reviews}, '/worker/reviews')}"></div>
+
+            <div class="empty-state" th:if="${reviews.isEmpty()}">
+                <i class="bi bi-star" aria-hidden="true"></i>
+                <h3>No reviews yet</h3>
+                <p>After you complete a job, the customer can rate it. Reviews will appear here.</p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

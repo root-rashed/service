@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* Reusable marketplace cards. Styles: /css/marketplace.css */-->
+
+<a class="category-card" th:fragment="categoryCard(category)"
+   th:href="${category.slug != null} ? @{/categories/{slug}(slug=${category.slug})} : @{/categories}"
+   th:classappend="'tone-' + ${category.tone}">
+    <style>
+        /* ReUI-style look. Scoped under .category-card. */
+        .category-card {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+            text-decoration: none;
+            transition: background-color .15s;
+        }
+        .category-card:hover { background: #f5f5f5; transform: none; box-shadow: none; border-color: #e5e5e5; }
+        .category-card:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+        .category-card .category-card__icon {
+            background: #f5f5f5;
+            color: #404040;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: none;
+        }
+        .category-card h3 { font-weight: 600; letter-spacing: -.01em; color: #0a0a0a; }
+        .category-card p { color: #737373; }
+    </style>
+    <span class="category-card__icon" aria-hidden="true"><i class="bi" th:classappend="${category.icon}"></i></span>
+    <h3 th:text="${category.name}">Home Services</h3>
+    <p th:text="${category.description}">Cleaning, repair, maintenance</p>
+</a>
+
+<article class="service-card" th:fragment="serviceCard(service)" th:classappend="'tone-' + ${service.tone}">
+    <style>
+        /* ReUI-style look. Scoped under .service-card. */
+        .service-card {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+            transition: none;
+        }
+        .service-card:hover { transform: none; box-shadow: none; border-color: #e5e5e5; }
+        .service-card .service-card__media {
+            background: #f5f5f5;
+            color: #404040;
+            border-radius: 12px 12px 0 0;
+        }
+        .service-card .service-card__media i { color: #404040; }
+        .service-card .badge {
+            background: #f5f5f5;
+            color: #0a0a0a;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+        }
+        .service-card .fav-btn {
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+            transition: background-color .15s;
+        }
+        /* Fixed size so page-level icon rules (e.g. in pages.css) can't blow the heart up */
+        .service-card .fav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 8px;
+        }
+        .service-card .fav-btn i {
+            font-size: 16px;
+            line-height: 1;
+            width: auto;
+            height: auto;
+            color: #dc2626;
+        }
+        .service-card .fav-btn:hover { background: #f5f5f5; transform: none; }
+        .service-card .fav-btn:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+        .service-card .service-card__title { font-weight: 600; letter-spacing: -.01em; }
+        .service-card .service-card__title a { color: #0a0a0a; text-decoration: none; }
+        .service-card .service-card__title a:hover { text-decoration: underline; }
+        .service-card .service-card__category,
+        .service-card .service-card__location,
+        .service-card .rating__count,
+        .service-card .price__unit { color: #737373; }
+        .service-card .rating i { color: #171717; }
+        .service-card .price { color: #0a0a0a; font-weight: 600; }
+    </style>
+    <div class="service-card__media">
+        <img th:if="${service.primaryImageUrl != null}" th:src="@{${service.primaryImageUrl}}" th:alt="${service.title}" loading="lazy">
+        <i class="bi" th:unless="${service.primaryImageUrl != null}" th:classappend="${service.icon}" aria-hidden="true"></i>
+        <span class="badge service-card__badge"
+              th:if="${service.badge != null}"
+              th:classappend="${service.badgeTone == 'blue'} ? 'badge--blue' : 'badge--orange'"
+              th:text="${service.badge}">Popular</span>
+        <button class="fav-btn" type="button" data-favorite
+                th:attr="data-service-id=${service.id}, aria-label=${'Save ' + service.title}, aria-pressed='false'">
+            <i class="bi bi-heart" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="service-card__body">
+        <h3 class="service-card__title">
+            <a th:href="@{/services/{slug}(slug=${service.slug})}" th:text="${service.title}">Service title</a>
+        </h3>
+        <p class="service-card__category" th:text="${service.categoryName}">Category</p>
+        <div class="service-card__meta">
+            <span class="rating" th:if="${service.reviewCount > 0}">
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <span th:text="${#numbers.formatDecimal(service.rating, 1, 'COMMA', 1, 'POINT')}">4.9</span>
+                <span class="rating__count" th:text="'(' + ${#numbers.formatInteger(service.reviewCount, 1, 'COMMA')} + ')'">(1,200)</span>
+            </span>
+            <span class="badge badge--orange-soft" th:unless="${service.reviewCount > 0}">New</span>
+            <span class="service-card__location" th:if="${service.location != null}">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${service.location}">Mirpur</span>
+            </span>
+        </div>
+        <p class="service-card__price">
+            <span class="price">&#2547;<span th:text="${#numbers.formatInteger(service.price, 1, 'COMMA')}">1,200</span></span>
+            <span class="price__unit" th:text="'/ ' + ${service.priceUnit}">/ per visit</span>
+        </p>
+    </div>
+</article>
+
+<article class="worker-card" th:fragment="workerCard(worker)" th:classappend="'tone-' + ${worker.tone}">
+    <style>
+        /* ReUI-style look. Scoped under .worker-card. */
+        .worker-card {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+            transition: none;
+        }
+        .worker-card:hover { transform: none; box-shadow: none; border-color: #e5e5e5; }
+        .worker-card .worker-card__avatar {
+            background: #f5f5f5;
+            color: #404040;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+        }
+        .worker-card .worker-card__name { font-weight: 600; letter-spacing: -.01em; }
+        .worker-card .worker-card__name a { color: #0a0a0a; text-decoration: none; }
+        .worker-card .worker-card__name a:hover { text-decoration: underline; }
+        .worker-card .worker-card__role,
+        .worker-card .worker-card__meta { color: #737373; }
+        .worker-card .badge {
+            background: #f5f5f5;
+            color: #0a0a0a;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+        }
+        .worker-card .badge i { color: #404040; }
+        .worker-card .rating { color: #0a0a0a; }
+        .worker-card .rating i { color: #171717; }
+    </style>
+    <span class="worker-card__avatar" aria-hidden="true">
+        <img th:if="${worker.profileImageUrl != null}" th:src="@{${worker.profileImageUrl}}" alt="" loading="lazy">
+        <th:block th:unless="${worker.profileImageUrl != null}"
+                  th:text="${#strings.toUpperCase(#strings.substring(worker.name, 0, 1))}">R</th:block>
+    </span>
+    <h3 class="worker-card__name">
+        <a th:href="@{/workers/{slug}(slug=${worker.slug})}" th:text="${worker.name}">Worker name</a>
+    </h3>
+    <p class="worker-card__role" th:text="${worker.profession}">Profession</p>
+    <span class="badge badge--green"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>
+    <div class="worker-card__meta">
+        <span class="rating" th:if="${worker.rating > 0}">
+            <i class="bi bi-star-fill" aria-hidden="true"></i>
+            <span th:text="${#numbers.formatDecimal(worker.rating, 1, 'COMMA', 1, 'POINT')}">4.9</span>
+        </span>
+        <span class="badge badge--orange-soft" th:unless="${worker.rating > 0}">New</span>
+        <span><span th:text="${worker.completedJobs}">200</span> jobs</span>
+        <span><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${worker.location}">Mirpur</span></span>
+    </div>
+</article>
+
+<article class="review-card" th:fragment="reviewCard(review)">
+    <style>
+        /* ReUI-style look. Scoped under .review-card. */
+        .review-card {
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #0a0a0a;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: none;
+            transition: none;
+        }
+        .review-card:hover { transform: none; box-shadow: none; border-color: #e5e5e5; }
+        .review-card .review-card__stars i { color: #171717; }
+        .review-card .review-card__text { color: #0a0a0a; }
+        .review-card .avatar {
+            background: #f5f5f5;
+            color: #404040;
+            border: 1px solid #e5e5e5;
+            box-shadow: none;
+        }
+        .review-card .review-card__author strong { color: #0a0a0a; font-weight: 600; }
+        .review-card .review-card__author span:not(.avatar) { color: #737373; }
+    </style>
+    <div class="review-card__stars" th:attr="aria-label=${review.rating + ' out of 5 stars'}" role="img">
+        <i class="bi" th:each="n : ${#numbers.sequence(1, 5)}"
+           th:classappend="${n <= review.rating} ? 'bi-star-fill' : 'bi-star'" aria-hidden="true"></i>
+    </div>
+    <p class="review-card__text" th:text="${review.comment}">Review text</p>
+    <div class="review-card__author">
+        <span class="avatar" aria-hidden="true" th:text="${#strings.substring(review.author, 0, 1)}">F</span>
+        <div>
+            <strong th:text="${review.author}">Customer</strong>
+            <span th:text="${review.serviceTitle}">Service</span>
+        </div>
+    </div>
+</article>
+</body>
+</html>

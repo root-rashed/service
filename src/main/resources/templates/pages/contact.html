@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <title th:text="'Contact us | ' + ${@environment.getProperty('app.name', 'ServiZone')}">Contact us</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="Contact the ServiZone team about a booking, a professional profile, an invoice or anything else on the platform.">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <style>
+            /* ServiZone Contact — ReUI-style look. Every rule is scoped under .ct (the <main> class). */
+            .ct {
+                --ct-fg: #0a0a0a;
+                --ct-muted: #737373;
+                --ct-border: #e5e5e5;
+                --ct-hover: #f5f5f5;
+                --ct-primary: #171717;
+                --ct-danger: #dc2626;
+                --ct-radius: 8px;
+                --ct-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--ct-fg);
+            }
+            .ct .section { background: transparent; }
+
+            /* Typography */
+            .ct h1,
+            .ct h2 {
+                font-family: inherit;
+                font-weight: 600;
+                color: var(--ct-fg);
+                letter-spacing: -.01em;
+            }
+            .ct p,
+            .ct .page-head p,
+            .ct .text-muted { color: var(--ct-muted); }
+            .ct a:not(.btn) {
+                color: var(--ct-fg);
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+
+            /* Cards: 1px border, 12px radius, no shadow, no hover lift */
+            .ct .card {
+                background: #fff;
+                border: 1px solid var(--ct-border);
+                border-radius: var(--ct-radius-card);
+                box-shadow: none;
+                transition: none;
+            }
+            .ct .card:hover { transform: none; box-shadow: none; border-color: var(--ct-border); }
+
+            /* Form fields: 36px, 8px radius, thin border */
+            .ct .form-label {
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--ct-fg);
+            }
+            .ct .form-label .text-muted { font-weight: 400; color: var(--ct-muted); }
+            .ct .form-control {
+                font-family: inherit;
+                font-size: 14px;
+                color: var(--ct-fg);
+                background-color: #fff;
+                border: 1px solid var(--ct-border);
+                border-radius: var(--ct-radius);
+                box-shadow: none;
+                outline: none;
+                transition: border-color .15s, box-shadow .15s;
+            }
+            .ct input.form-control,
+            .ct select.form-control {
+                height: 36px;
+                min-height: 36px;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+            .ct textarea.form-control { min-height: 36px; }
+            .ct .form-control::placeholder { color: #8a8a8a; }
+            .ct .form-control:focus {
+                border-color: #a3a3a3;
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+                outline: none;
+            }
+            .ct .form-hint { color: var(--ct-muted); font-size: 12px; }
+
+            /* Errors: red is allowed here */
+            .ct .form-error { color: var(--ct-danger); font-size: 13px; }
+            .ct .has-error .form-control { border-color: var(--ct-danger); }
+            .ct .has-error .form-control:focus {
+                border-color: var(--ct-danger);
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+            }
+
+            /* Side links */
+            .ct .about-side__title { font-weight: 600; }
+            .ct .link-list a { color: var(--ct-fg); text-decoration: none; }
+            .ct .link-list a:hover { text-decoration: underline; }
+            .ct .link-list i { color: var(--ct-muted); }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .ct .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--ct-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .ct .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .ct .btn:focus-visible { outline: 2px solid var(--ct-primary); outline-offset: 2px; }
+            .ct .btn--primary {
+                background: var(--ct-primary);
+                border-color: var(--ct-primary);
+                color: #fff;
+            }
+            .ct .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="ct">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Contact us</h1>
+                <p>Tell us what happened and we'll look into it. We usually reply within one working day.</p>
+            </div>
+
+            <div class="about-cols">
+                <form class="card card--pad" th:action="@{/contact}" th:object="${contactForm}"
+                      method="post" data-loading-on-submit>
+                    <p class="form-error" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}"
+                       th:text="${err}"></p>
+
+                    <div class="form-row">
+                        <div class="form-field" th:classappend="${#fields.hasErrors('name')} ? 'has-error'">
+                            <label class="form-label" for="name">Your name</label>
+                            <input class="form-control" type="text" id="name" th:field="*{name}"
+                                   autocomplete="name" required>
+                            <p class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                        </div>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
+                            <label class="form-label" for="email">Email</label>
+                            <input class="form-control" type="email" id="email" th:field="*{email}"
+                                   autocomplete="email" required>
+                            <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+                        </div>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('phone')} ? 'has-error'">
+                        <label class="form-label" for="phone">Phone <span class="text-muted">(optional)</span></label>
+                        <input class="form-control" type="tel" id="phone" th:field="*{phone}" autocomplete="tel">
+                        <p class="form-hint">Only if you'd like us to call you back.</p>
+                        <p class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('subject')} ? 'has-error'">
+                        <label class="form-label" for="subject">Subject</label>
+                        <select class="form-control" id="subject" th:field="*{subject}">
+                            <option value="Booking or scheduling">Booking or scheduling</option>
+                            <option value="Payment question">Payment question</option>
+                            <option value="Professional profile">Professional profile</option>
+                            <option value="Report a review">Report a review</option>
+                            <option value="Something else">Something else</option>
+                        </select>
+                        <p class="form-error" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></p>
+                    </div>
+
+                    <div class="form-field" th:classappend="${#fields.hasErrors('message')} ? 'has-error'">
+                        <label class="form-label" for="message">Message</label>
+                        <textarea class="form-control" id="message" rows="6" th:field="*{message}"
+                                  placeholder="Include the booking reference if it's about a specific job." required></textarea>
+                        <p class="form-error" th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></p>
+                    </div>
+
+                    <button class="btn btn--primary" type="submit">Send message</button>
+                </form>
+
+                <aside class="card card--pad about-side">
+                    <h2 class="about-side__title">Before you write</h2>
+                    <p class="text-muted">
+                        These answers cover most questions and are usually faster than waiting for a reply.
+                    </p>
+                    <ul class="link-list">
+                        <li><a th:href="@{/faq}"><i class="bi bi-question-circle" aria-hidden="true"></i> Read the FAQ</a></li>
+                        <li><a th:href="@{/customer/bookings}" sec:authorize="hasRole('CUSTOMER')"><i class="bi bi-calendar-check" aria-hidden="true"></i> Manage a booking</a></li>
+                        <li><a th:href="@{/worker/bookings}" sec:authorize="hasRole('WORKER')"><i class="bi bi-tools" aria-hidden="true"></i> Manage your jobs</a></li>
+                        <li><a th:href="@{/about}"><i class="bi bi-info-circle" aria-hidden="true"></i> How the platform works</a></li>
+                    </ul>
+                    <h2 class="about-side__title">What happens next</h2>
+                    <p class="text-muted mb-0">
+                        Your message goes straight to our support team. We reply by email, so keep an eye on
+                        your inbox &mdash; and include a booking reference if it helps.
+                    </p>
+                </aside>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

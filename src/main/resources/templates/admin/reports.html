@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title>Reports</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/admin.css}">
+        <style>
+/* ServiZone admin — ReUI-style. Scoped under .ad so nothing outside this page is affected. */
+.ad {
+    --ad-fg: #0a0a0a;
+    --ad-muted: #737373;
+    --ad-border: #e5e5e5;
+    --ad-border-strong: #d4d4d4;
+    --ad-soft: #fafafa;
+    --ad-hover: #f5f5f5;
+    --ad-ink: #171717;
+    --ad-radius: 8px;
+    --ad-radius-lg: 12px;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ad-fg);
+}
+.ad h1, .ad h2, .ad h3 { font-family: inherit; font-weight: 600; letter-spacing: -.02em; color: var(--ad-fg); }
+.ad p { color: var(--ad-muted); }
+.ad :focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ad-ink); }
+.ad .section { padding-block: 24px; }
+.ad .section:first-child { padding-top: 40px; padding-bottom: 8px; }
+.ad .container--narrow { max-width: 760px; }
+.ad .text-muted { color: var(--ad-muted); }
+.ad .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Page heading */
+.ad .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); }
+.ad .page-head p { margin: 0; font-size: 14px; }
+.ad .page-head--row {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.ad .page-head.page-head--row { align-items: flex-start; gap: 16px; }
+
+/* Buttons */
+.ad .btn {
+    min-height: 36px; padding: 0 14px; font-size: 14px; font-weight: 500;
+    border-width: 1px; border-radius: var(--ad-radius); box-shadow: none;
+}
+.ad .btn--sm { min-height: 30px; padding: 0 10px; font-size: 13px; border-radius: var(--ad-radius); }
+.ad .btn--block { width: 100%; }
+.ad .btn--primary { background: var(--ad-ink); border-color: var(--ad-ink); color: #fff; }
+.ad .btn--primary:hover { background: #2b2b2b; box-shadow: none; }
+.ad .btn--outline { background: #fff; border-color: var(--ad-border); color: var(--ad-fg); }
+.ad .btn--outline:hover { background: var(--ad-hover); border-color: var(--ad-border-strong); box-shadow: none; }
+.ad .btn--ghost { background: transparent; border-color: transparent; color: var(--ad-muted); }
+.ad .btn--ghost:hover { background: var(--ad-hover); color: var(--ad-fg); }
+.ad .btn--danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+.ad .btn--danger:hover { background: #b91c1c; border-color: #b91c1c; }
+
+/* Forms */
+.ad .form-field { margin-bottom: 14px; }
+.ad .form-label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--ad-fg); }
+.ad .form-control {
+    display: block; width: 100%; min-height: 36px; padding: 0 12px;
+    font: inherit; font-size: 14px; color: var(--ad-fg); background: #fff;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius); box-shadow: none; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+.ad textarea.form-control { padding: 8px 12px; line-height: 1.5; resize: vertical; }
+.ad .form-control::placeholder { color: #a3a3a3; }
+.ad .form-control:focus { border-color: #a3a3a3; box-shadow: 0 0 0 3px rgba(0, 0, 0, .06); }
+.ad .form-hint { display: block; margin-top: 6px; font-size: 12px; color: var(--ad-muted); }
+.ad .form-hint code, .ad .admin-panel__note code {
+    padding: 1px 5px; font-size: 12px; background: var(--ad-hover); border-radius: 4px; color: var(--ad-fg);
+}
+.ad .form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+/* Filters and tabs */
+.ad .tab-row {
+    display: flex; gap: 2px; width: fit-content; max-width: 100%; margin-bottom: 16px; padding: 4px;
+    overflow-x: auto; background: var(--ad-hover); border-radius: 10px;
+}
+.ad .tab {
+    display: inline-flex; align-items: center; flex-shrink: 0; padding: 6px 12px;
+    font-size: 14px; font-weight: 500; color: var(--ad-muted); text-decoration: none; white-space: nowrap;
+    border-radius: 6px; transition: color .15s, background-color .15s;
+}
+.ad .tab:hover { color: var(--ad-fg); }
+.ad .tab.is-active { background: #fff; color: var(--ad-fg); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.ad .tab__count {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px;
+    margin-left: 8px; padding: 0 6px; font-size: 11px; font-weight: 600;
+    background: var(--ad-border); color: var(--ad-fg); border-radius: 999px;
+}
+.ad .admin-panel h2 .tab__count {
+    min-width: 0; height: auto; margin-left: 4px; padding: 0;
+    font-size: inherit; font-weight: 400; background: none; color: var(--ad-muted);
+}
+
+.ad .filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 16px; }
+.ad .filter-bar .form-field { margin: 0; min-width: 160px; }
+.ad .filter-bar__grow { flex: 1 1 260px; }
+.ad .filter-bar__actions { display: flex; gap: 8px; }
+
+/* Tables */
+.ad .admin-table-wrap {
+    overflow-x: auto; background: #fff;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius-lg); box-shadow: none;
+}
+.ad .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ad .admin-table th {
+    padding: 10px 16px; font-size: 12px; font-weight: 500; text-align: left; white-space: nowrap;
+    color: var(--ad-muted); background: var(--ad-soft); border-bottom: 1px solid var(--ad-border);
+}
+.ad .admin-table td { padding: 12px 16px; vertical-align: middle; color: var(--ad-fg); border-bottom: 1px solid var(--ad-border); }
+.ad .admin-table tbody tr:last-child td { border-bottom: 0; }
+.ad .admin-table tbody tr:hover td { background: var(--ad-soft); }
+.ad .admin-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ad .admin-table .cell-money { font-weight: 500; font-variant-numeric: tabular-nums; }
+.ad .admin-table th.is-actions, .ad .admin-table td.is-actions { text-align: right; white-space: nowrap; }
+.ad .admin-table td.is-actions form { display: inline-block; margin: 0; }
+.ad .admin-table td.is-actions > * + * { margin-left: 8px; }
+.ad .admin-table td a:not(.btn) { color: var(--ad-fg); text-decoration: underline; text-underline-offset: 2px; }
+.ad .admin-table__strong { display: block; font-weight: 500; color: var(--ad-fg); }
+.ad .admin-table__sub { display: block; margin-top: 1px; font-size: 12px; font-weight: 400; color: var(--ad-muted); }
+.ad .admin-table__person { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.ad .admin-table__thumb {
+    width: 40px; height: 40px; flex-shrink: 0; object-fit: cover;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius);
+}
+.ad .cell-money { font-variant-numeric: tabular-nums; }
+
+/* Panels and layout */
+.ad .admin-cols { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.ad .admin-side { display: grid; gap: 16px; align-content: start; }
+.ad .admin-panel {
+    padding: 20px; background: #fff;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius-lg); box-shadow: none;
+}
+.ad .admin-panel h2 { margin: 0 0 12px; font-size: 16px; }
+.ad .admin-panel h3 { margin: 0 0 8px; font-size: 14px; }
+.ad .admin-panel__note { margin: 0 0 16px; font-size: 13px; line-height: 1.55; color: var(--ad-muted); }
+.ad .admin-panel .page-head--row { margin-bottom: 4px; }
+.ad .admin-panel .page-head--row h2 { margin: 0; }
+.ad .setting-group { margin-bottom: 16px; }
+.ad .setting-group > p { margin: 0 0 16px; font-size: 13px; line-height: 1.55; }
+.ad .report-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ad .prose { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ad-fg); white-space: pre-line; }
+
+/* Key/value details */
+.ad .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; }
+.ad .detail-grid dt { font-size: 12px; font-weight: 500; color: var(--ad-muted); }
+.ad .detail-grid dd { margin: 3px 0 0; font-size: 14px; font-weight: 500; color: var(--ad-fg); overflow-wrap: anywhere; }
+.ad .detail-grid .cell-money { font-variant-numeric: tabular-nums; }
+
+/* Badges: neutral by default, tinted for the usual tone names */
+.ad .badge {
+    display: inline-flex; align-items: center; flex-shrink: 0; height: 22px; padding: 0 8px;
+    font-size: 12px; font-weight: 500; white-space: nowrap; color: #404040;
+    background: var(--ad-hover); border: 1px solid var(--ad-border); border-radius: 999px;
+}
+.ad .badge--success, .ad .badge--positive, .ad .badge--approved, .ad .badge--active, .ad .badge--green
+    { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.ad .badge--warning, .ad .badge--pending, .ad .badge--amber, .ad .badge--orange
+    { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.ad .badge--danger, .ad .badge--error, .ad .badge--rejected, .ad .badge--suspended, .ad .badge--red
+    { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+.ad .badge--info, .ad .badge--primary, .ad .badge--blue
+    { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+
+/* Avatars, icons, chips */
+.ad .avatar {
+    width: 32px; height: 32px; flex-shrink: 0; font-size: 13px; font-weight: 600;
+    background: var(--ad-hover); color: var(--ad-ink); border: 1px solid var(--ad-border);
+}
+.ad .avatar--xl { width: 56px; height: 56px; font-size: 20px; }
+.ad .quick-link__icon {
+    display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; font-size: 15px;
+    background: var(--ad-hover); color: var(--ad-ink);
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius);
+}
+.ad .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.ad .chip {
+    display: inline-flex; align-items: center; padding: 2px 10px; font-size: 12px; font-weight: 500;
+    color: #404040; background: var(--ad-hover); border: 1px solid var(--ad-border); border-radius: 999px;
+}
+
+/* Decisions, history, links, rankings */
+.ad .decision-list { display: flex; flex-direction: column; gap: 8px; }
+.ad .decision {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius);
+}
+.ad .decision--approve { background: #f0fdf4; border-color: #bbf7d0; }
+.ad .decision--danger { background: #fef2f2; border-color: #fecaca; }
+.ad .decision form { margin: 0; flex-shrink: 0; }
+.ad .decision__text strong { display: block; font-size: 14px; font-weight: 500; color: var(--ad-fg); }
+.ad .decision__text span { display: block; margin-top: 1px; font-size: 12px; color: var(--ad-muted); }
+
+.ad .timeline { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ad .timeline li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ad-fg); }
+.ad .timeline__when { display: block; font-size: 12px; color: var(--ad-muted); }
+
+.ad .link-list { display: flex; flex-direction: column; gap: 2px; }
+.ad .link-list a {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    font-size: 14px; font-weight: 500; color: var(--ad-fg); text-decoration: none; border-radius: var(--ad-radius);
+}
+.ad .link-list a:hover { background: var(--ad-hover); }
+.ad .link-list a i { color: var(--ad-muted); }
+
+.ad .rank-list { margin: 0; padding: 0; list-style: none; }
+.ad .rank-list li {
+    display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--ad-border);
+}
+.ad .rank-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.ad .rank-list__pos {
+    display: grid; place-items: center; width: 24px; height: 24px; font-size: 12px; font-weight: 600;
+    background: var(--ad-hover); border: 1px solid var(--ad-border); border-radius: 50%;
+}
+.ad .rank-list__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
+.ad .rank-list__name a { color: var(--ad-fg); text-decoration: underline; text-underline-offset: 2px; }
+.ad .rank-list__value { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+.ad .rank-list__value small { font-size: 12px; font-weight: 400; }
+
+/* Alerts and empty states */
+.ad .alert {
+    display: flex; gap: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.55;
+    border: 1px solid var(--ad-border); border-radius: var(--ad-radius);
+}
+.ad .alert--info { background: var(--ad-soft); color: #404040; }
+.ad .alert > i { margin-top: 2px; color: var(--ad-muted); }
+.ad .container--narrow .alert { margin-bottom: 16px; }
+.ad .empty-state {
+    padding: 40px 16px; text-align: center; background: transparent;
+    border: 1px dashed var(--ad-border-strong); border-radius: var(--ad-radius-lg);
+}
+.ad .empty-state > i { font-size: 22px; color: var(--ad-muted); }
+.ad .empty-state h3 { margin: 10px 0 4px; font-size: 15px; }
+.ad .empty-state p { margin: 0 0 16px; font-size: 13px; }
+
+@media (max-width: 960px) {
+    .ad .admin-cols { grid-template-columns: 1fr; }
+    .ad .report-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+    .ad .section:first-child { padding-top: 28px; }
+    .ad .detail-grid { grid-template-columns: 1fr; }
+    .ad .admin-panel { padding: 16px; }
+    .ad .decision { flex-wrap: wrap; }
+}
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="ad">
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Reports</h1>
+                <p>Booking and cash totals by month, plus the busiest services and professionals.</p>
+            </div>
+        </div>
+    </section>
+
+    <div th:replace="~{fragments/admin-nav :: adminNav}"></div>
+
+    <section class="section">
+        <div class="container">
+            <!-- Monthly totals -->
+            <section class="admin-panel">
+                <h2>Last six months</h2>
+                <p class="admin-panel__note">
+                    Counted by the date the job was booked for, not the date it was requested, so
+                    "cash collected" really is the cash collected in that month. Totals cover the last
+                    six calendar months.
+                </p>
+
+                <div class="admin-table-wrap" style="box-shadow: none;">
+                    <table class="admin-table">
+                        <caption class="visually-hidden">Monthly booking and cash totals</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Month</th>
+                                <th scope="col" class="cell-num">Bookings</th>
+                                <th scope="col" class="cell-num">Completed</th>
+                                <th scope="col" class="cell-num">Job value</th>
+                                <th scope="col" class="cell-num">Cash collected</th>
+                                <th scope="col" class="cell-num">Platform fees</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${report.months}">
+                                <td class="admin-table__strong" th:text="${m.monthLabel}">Month</td>
+                                <td class="cell-num" th:text="${m.bookings}">0</td>
+                                <td class="cell-num" th:text="${m.completed}">0</td>
+                                <td class="cell-num cell-money">
+                                    &#2547;<span th:text="${#numbers.formatDecimal(m.jobValue, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </td>
+                                <td class="cell-num cell-money">
+                                    &#2547;<span th:text="${#numbers.formatDecimal(m.cashCollected, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </td>
+                                <td class="cell-num">
+                                    &#2547;<span th:text="${#numbers.formatDecimal(m.platformFees, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="report-grid" style="margin-top: var(--space-5);">
+                <!-- Busiest services -->
+                <section class="admin-panel">
+                    <h2>Most-booked services</h2>
+                    <p class="admin-panel__note">All time, by number of bookings requested.</p>
+                    <ol class="rank-list" th:if="${!report.topServices.isEmpty()}">
+                        <li th:each="s, it : ${report.topServices}">
+                            <span class="rank-list__pos" th:text="${it.count}">1</span>
+                            <span class="rank-list__name" th:text="${s.title}">Service</span>
+                            <span class="rank-list__value">
+                                <span th:text="${s.bookings}">0</span> bookings
+                                <small class="text-muted">
+                                    &middot; &#2547;<span th:text="${#numbers.formatDecimal(s.value, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </small>
+                            </span>
+                        </li>
+                    </ol>
+                    <p class="text-muted" th:if="${report.topServices.isEmpty()}">
+                        No bookings have been placed yet.
+                    </p>
+                </section>
+
+                <!-- Top professionals -->
+                <section class="admin-panel">
+                    <h2>Top professionals</h2>
+                    <p class="admin-panel__note">By completed jobs, all time.</p>
+                    <ol class="rank-list" th:if="${!report.topWorkers.isEmpty()}">
+                        <li th:each="w, it : ${report.topWorkers}">
+                            <span class="rank-list__pos" th:text="${it.count}">1</span>
+                            <span class="rank-list__name">
+                                <a th:if="${w.slug != null}" th:href="@{/workers/{slug}(slug=${w.slug})}"
+                                   th:text="${w.displayName}">Pro</a>
+                                <span th:if="${w.slug == null}" th:text="${w.displayName}">Pro</span>
+                            </span>
+                            <span class="rank-list__value">
+                                <span th:text="${w.completed}">0</span> jobs
+                                <small class="text-muted">
+                                    &middot; &#2547;<span th:text="${#numbers.formatDecimal(w.value, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                </small>
+                            </span>
+                        </li>
+                    </ol>
+                    <p class="text-muted" th:if="${report.topWorkers.isEmpty()}">
+                        No jobs have been completed yet.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

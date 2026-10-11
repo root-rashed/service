@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'All service categories | ' + ${@environment.getProperty('app.name', 'ServiZone')}">All service categories</title>
+    <th:block th:fragment="extraHead">
+        <meta name="description" content="Browse every service category: home services, beauty and wellness, IT and tech, tutoring, health and fitness, business services, events and photography.">
+        <link rel="canonical" th:href="${canonicalUrl}">
+        <link rel="stylesheet" th:href="@{/css/marketplace.css}">
+        <style>
+            /* ServiZone All categories — ReUI-style look. Every rule is scoped under .cl (the <main> class). */
+            .cl {
+                --cl-fg: #0a0a0a;
+                --cl-muted: #737373;
+                --cl-border: #e5e5e5;
+                --cl-hover: #f5f5f5;
+                --cl-primary: #171717;
+                --cl-radius: 8px;
+                --cl-radius-card: 12px;
+                background-color: #fff;
+                background-image:
+                        linear-gradient(to right, rgba(0, 0, 0, .035) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, .035) 1px, transparent 1px);
+                background-size: 40px 40px;
+                font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                color: var(--cl-fg);
+            }
+            .cl .section { background: transparent; }
+
+            /* Typography */
+            .cl h1,
+            .cl h3 {
+                font-family: inherit;
+                font-weight: 600;
+                letter-spacing: -.01em;
+                color: var(--cl-fg);
+            }
+            .cl p,
+            .cl .section-head p { color: var(--cl-muted); }
+
+            /* Empty state: 1px bordered card, grey icon tile */
+            .cl .empty-state {
+                background: #fff;
+                border: 1px solid var(--cl-border);
+                border-radius: var(--cl-radius-card);
+                box-shadow: none;
+            }
+            .cl .empty-state > i {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+                color: #404040;
+                background: var(--cl-hover);
+                border: 1px solid var(--cl-border);
+                border-radius: var(--cl-radius);
+            }
+
+            /* Buttons: 36px high, 8px radius, no shadow */
+            .cl .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0 16px;
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                border-radius: var(--cl-radius);
+                border: 1px solid transparent;
+                box-shadow: none;
+                text-decoration: none;
+                transform: none;
+                transition: background-color .15s, border-color .15s;
+            }
+            .cl .btn:hover { transform: none; box-shadow: none; text-decoration: none; }
+            .cl .btn:focus-visible { outline: 2px solid var(--cl-primary); outline-offset: 2px; }
+            .cl .btn--primary { background: var(--cl-primary); border-color: var(--cl-primary); color: #fff; }
+            .cl .btn--primary:hover { background: #2b2b2b; border-color: #2b2b2b; color: #fff; }
+        </style>
+    </th:block>
+</head>
+<body>
+<main class="cl">
+    <section class="section" aria-labelledby="categories-title">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h1 id="categories-title" style="font-size: var(--fs-3xl);">All Categories</h1>
+                    <p>Pick a category to find professionals near you.</p>
+                </div>
+            </div>
+
+            <div class="category-grid" th:if="${!categories.isEmpty()}">
+                <th:block th:each="category : ${categories}">
+                    <a th:replace="~{fragments/cards :: categoryCard(${category})}"></a>
+                </th:block>
+            </div>
+
+            <div class="empty-state" th:if="${categories.isEmpty()}">
+                <i class="bi bi-grid" aria-hidden="true"></i>
+                <h3>No categories yet</h3>
+                <p>Categories will appear here once they are added.</p>
+                <a class="btn btn--primary" th:href="@{/}">Back to home</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

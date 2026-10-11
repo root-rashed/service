@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::main}, ~{::extraHead})}">
+<head>
+    <title th:text="'Book ' + ${checkout.service.title}">Book a service</title>
+    <th:block th:fragment="extraHead">
+        <meta name="robots" content="noindex">
+        <link rel="stylesheet" th:href="@{/css/pages.css}">
+        <link rel="stylesheet" th:href="@{/css/booking.css}">
+        <script th:src="@{/js/booking.js}" defer></script>
+    </th:block>
+</head>
+<body>
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="page-head">
+                <h1>Book <span th:text="${checkout.service.title}">service</span></h1>
+                <p>Four quick steps. You pay in cash after the job is done.</p>
+            </div>
+
+            <ol class="stepper" aria-label="Booking progress">
+                <li class="stepper__item is-active" data-step-indicator="1"><span class="stepper__num">1</span><span class="stepper__label">Service</span></li>
+                <li class="stepper__item" data-step-indicator="2"><span class="stepper__num">2</span><span class="stepper__label">Date &amp; time</span></li>
+                <li class="stepper__item" data-step-indicator="3"><span class="stepper__num">3</span><span class="stepper__label">Address</span></li>
+                <li class="stepper__item" data-step-indicator="4"><span class="stepper__num">4</span><span class="stepper__label">Cash payment</span></li>
+                <li class="stepper__item" data-step-indicator="5"><span class="stepper__num">5</span><span class="stepper__label">Confirmation</span></li>
+            </ol>
+
+            <div class="booking-layout" data-booking
+                 th:attr="data-slots-url=@{/api/services/{slug}/slots(slug=${checkout.service.slug})}, data-start-step=${startStep}">
+
+                <form class="card card--pad" th:action="@{/booking}" th:object="${bookingRequest}" method="post" data-loading-on-submit>
+                    <div class="alert alert--error" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</span>
+                    </div>
+                    <input type="hidden" th:field="*{serviceSlug}">
+
+                    <!-- Step 1: service -->
+                    <section class="booking-step" data-step="1" aria-labelledby="step1-title">
+                        <h2 id="step1-title">1. Your service</h2>
+                        <div class="service-recap" th:classappend="'tone-' + ${checkout.service.tone}">
+                            <span class="service-recap__icon">
+                                <img th:if="${checkout.service.primaryImageUrl != null}" th:src="@{${checkout.service.primaryImageUrl}}" alt="">
+                                <i class="bi" th:unless="${checkout.service.primaryImageUrl != null}" th:classappend="${checkout.service.icon}" aria-hidden="true"></i>
+                            </span>
+                            <div>
+                                <h3 th:text="${checkout.service.title}">Service</h3>
+                                <p>
+                                    by <strong th:text="${checkout.workerName}">Worker</strong>
+                                    &middot; <span th:text="${checkout.service.durationLabel}">1 hour</span>
+                                    &middot; <span th:text="${checkout.service.location}">Mirpur</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step-nav">
+                            <a class="btn btn--ghost" th:href="@{/services/{slug}(slug=${checkout.service.slug})}">Back to service</a>
+                            <button class="btn btn--primary" type="button" data-next>Choose date &amp; time</button>
+                        </div>
+                    </section>
+
+                    <!-- Step 2: date and time -->
+                    <section class="booking-step" data-step="2" aria-labelledby="step2-title">
+                        <h2 id="step2-title">2. Date &amp; time</h2>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('date')} ? 'has-error'">
+                            <label class="form-label" for="date">Date</label>
+                            <input class="form-control" type="date" id="date" th:field="*{date}"
+                                   th:attr="min=${checkout.minDate}, max=${checkout.maxDate}" required>
+                            <p class="form-error" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></p>
+                        </div>
+                        <input type="hidden" th:field="*{startMinute}">
+                        <p class="slots-status" data-slots-status aria-live="polite">Choose a date to see free times.</p>
+                        <div class="slots" data-slots role="group" aria-label="Free times"></div>
+                        <p class="form-error" th:if="${#fields.hasErrors('startMinute')}" th:errors="*{startMinute}"></p>
+                        <p class="field-error" data-js-error="slot" hidden role="alert"></p>
+                        <div class="step-nav">
+                            <button class="btn btn--ghost" type="button" data-back>Back</button>
+                            <button class="btn btn--primary" type="button" data-next>Continue to address</button>
+                        </div>
+                    </section>
+
+                    <!-- Step 3: address -->
+                    <section class="booking-step" data-step="3" aria-labelledby="step3-title">
+                        <h2 id="step3-title">3. Where should the professional come?</h2>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('address')} ? 'has-error'">
+                            <label class="form-label" for="address">Full address</label>
+                            <textarea class="form-control" id="address" rows="3" th:field="*{address}" maxlength="250"
+                                      placeholder="House, road, area, city and any landmark"></textarea>
+                            <p class="form-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
+                            <p class="field-error" data-js-error="address" hidden role="alert"></p>
+                        </div>
+                        <div class="form-field" th:classappend="${#fields.hasErrors('customerNote')} ? 'has-error'">
+                            <label class="form-label" for="customerNote">Note for the professional <span class="text-muted">(optional)</span></label>
+                            <textarea class="form-control" id="customerNote" rows="3" th:field="*{customerNote}" maxlength="500"
+                                      placeholder="Anything they should know before they arrive"></textarea>
+                            <p class="form-error" th:if="${#fields.hasErrors('customerNote')}" th:errors="*{customerNote}"></p>
+                        </div>
+                        <div class="step-nav">
+                            <button class="btn btn--ghost" type="button" data-back>Back</button>
+                            <button class="btn btn--primary" type="button" data-next>Continue to payment</button>
+                        </div>
+                    </section>
+
+                    <!-- Step 4: cash payment -->
+                    <section class="booking-step" data-step="4" aria-labelledby="step4-title">
+                        <h2 id="step4-title">4. Cash payment</h2>
+                        <label class="pay-option">
+                            <input type="radio" th:field="*{paymentMethod}" value="CASH" checked>
+                            <span>
+                                <strong>Cash</strong>
+                                <span>Pay the professional in cash after the job is done. There is no online payment.</span>
+                            </span>
+                        </label>
+                        <p class="form-error" th:if="${#fields.hasErrors('paymentMethod')}" th:errors="*{paymentMethod}"></p>
+                        <p class="form-hint" style="margin-top: 1rem;">
+                            The price and platform fee are calculated again on our server when you confirm.
+                            The professional must accept your request before the booking is confirmed.
+                        </p>
+                        <div class="step-nav">
+                            <button class="btn btn--ghost" type="button" data-back>Back</button>
+                            <button class="btn btn--primary btn--lg" type="submit">Confirm booking</button>
+                        </div>
+                    </section>
+                </form>
+
+                <aside class="card card--pad booking-summary" aria-label="Booking summary">
+                    <h2>Summary</h2>
+                    <dl class="summary-lines">
+                        <div><dt>Service</dt><dd th:text="${checkout.service.title}">Service</dd></div>
+                        <div><dt>Professional</dt><dd th:text="${checkout.workerName}">Worker</dd></div>
+                        <div><dt>Date</dt><dd data-summary-date>Not selected</dd></div>
+                        <div><dt>Time</dt><dd data-summary-time>Not selected</dd></div>
+                        <div><dt>Duration</dt><dd th:text="${checkout.service.durationLabel}">1 hour</dd></div>
+                    </dl>
+                    <dl class="summary-lines">
+                        <div><dt>Service price</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(checkout.servicePrice, 1, 'COMMA', 2, 'POINT')}">800.00</span></dd></div>
+                        <div><dt>Platform fee (<span th:text="${checkout.feeLabel}">5%</span>)</dt><dd>&#2547;<span th:text="${#numbers.formatDecimal(checkout.platformFee, 1, 'COMMA', 2, 'POINT')}">40.00</span></dd></div>
+                    </dl>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <strong>&#2547;<span th:text="${#numbers.formatDecimal(checkout.totalAmount, 1, 'COMMA', 2, 'POINT')}">840.00</span></strong>
+                    </div>
+                    <p class="summary-note">
+                        <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                        <span>Payment method: Cash, paid after the service.</span>
+                    </p>
+                </aside>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
