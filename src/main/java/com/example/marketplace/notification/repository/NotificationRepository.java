@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
     Page<Notification> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
-
     List<Notification> findTop5ByUserIdAndReadFalseOrderByCreatedAtDesc(String userId);
 
     long countByUserIdAndReadFalse(String userId);

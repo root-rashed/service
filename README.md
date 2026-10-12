@@ -7,8 +7,8 @@ job**.
 
 Built as a single Maven module with feature-based packages.
 
-- Java 17 · Spring Boot 4.1.1 · Spring AI 2.0.1 · Spring Data MongoDB · Thymeleaf · Spring Security
-- 199 Java sources, 55 templates, 20 static assets, 49 tests
+- Java 17 · Spring Boot 4.1.1 · Spring AI 2.0.1 · Spring Data MongoDB · Thymeleaf · Spring Security · Brevo/Resend
+- 203 Java sources, 55 templates, 20 static assets, 65 tests
 
 ---
 
@@ -57,7 +57,7 @@ mvn spring-boot:run                    # dev profile, templates uncached
 SPRING_PROFILES_ACTIVE=prod mvn clean package && java -jar target/market-0.0.1-SNAPSHOT.jar
 ```
 
-MongoDB Atlas and Gmail are reached over the network, so a local run needs only Java 17 and Maven.
+MongoDB Atlas and the configured email provider (Brevo or Resend) are reached over the network, so a local run needs only Java 17 and Maven.
 
 ---
 
@@ -71,12 +71,12 @@ Everything is an environment variable with a working default in
 | `SPRING_PROFILES_ACTIVE` | `dev` | `prod` enables template caching, secure cookies and quiet error pages |
 | `SERVER_PORT` | `8080` | HTTP port |
 | `MONGODB_URI` | Atlas cluster (see below) | Database connection string |
-| `MAIL_HOST` | `smtp.gmail.com` | SMTP host |
-| `MAIL_PORT` | `587` | SMTP port, with STARTTLS |
-| `MAIL_USERNAME` | `rashedulislam.raze@gmail.com` | Sending account |
-| `MAIL_PASSWORD` | Gmail app password (see below) | SMTP credential |
-| `MAIL_FROM` | same as username | Envelope sender for verification and reset mail |
-| `CONTACT_EMAIL` | same as username | Where the contact form is delivered |
+| `MAIL_PROVIDER` | `brevo` | Email provider: `brevo` or `resend`. |
+| `BREVO_API_KEY` | blank | Brevo API key for all outgoing email. |
+| `RESEND_API_KEY` | blank | Resend API key if using the `resend` provider. |
+| `MAIL_FROM` | empty | Sender address. For Brevo, a verified sender email (no domain required). |
+| `MAIL_FROM_NAME` | `ServiZone` | Display name used when `MAIL_FROM` has no explicit name. |
+| `CONTACT_EMAIL` | blank | Where the contact form is delivered; blank disables the relay |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | blank | Bootstrap administrator, see below |
 | `STORAGE_PATH` | `./storage` | Root for uploaded images |
 | `APP_BASE_URL` | `http://localhost:8080` | Used in the links inside emails |
@@ -104,14 +104,49 @@ Indexes are created on startup (`spring.data.mongodb.auto-index-creation: true`)
 database needs no manual setup. The database is used as-is: there is no migration step and no
 schema file, because MongoDB is the schema.
 
-### Mail
+### Outgoing email (Resend)
 
-Gmail needs an **app password**, not the account password: turn on 2-Step Verification, then create
-one under Google Account → Security → App passwords. `MAIL_USERNAME` is the Gmail address and
-`MAIL_PASSWORD` is the 16-character app password.
+All application email — registration and password-reset OTP codes, booking notifications and the
+contact form — is delivered through [Resend](https://resend.com)'s HTTPS API using the official
+Resend Java SDK. There is no SMTP client and no Gmail dependency. Removing SMTP also means a wrong
+mail credential can no longer mark the application unhealthy, and a send failure is logged without
+taking the site down.
 
-`management.health.mail.enabled` is `false` so a wrong mail credential does not mark the whole
-application unhealthy. A send failure is logged; it does not take the site down.
+1. **Get an API key.** Sign in at <https://resend.com>, then *API Keys → Create API Key*. Copy it
+   once; Resend does not show it again.
+2. **Set `RESEND_API_KEY` locally.** Export it in the shell before starting the app, or add it to
+   your IDE's run configuration as an environment variable (not a program argument):
+   ```bash
+   export RESEND_API_KEY="re_..."
+   ```
+   Keep it out of `application.yml` and out of Git.
+3. **Set `MAIL_FROM`.** For a first test the default `onboarding@resend.dev` is fine, but Resend
+   only lets that sender deliver to the address that owns the account. For anything real, verify a
+   domain (step 7) and set a sender on it, for example:
+   ```bash
+   export MAIL_FROM="ServiZone <no-reply@yourdomain.com>"
+   ```
+4. **Run the application:** `mvn spring-boot:run` (or `docker compose up --build`).
+5. **Test an existing workflow safely.** Register a new account at `/register` using an address you
+   can read; the six-digit verification code is sent through Resend and lands in that inbox. A
+   booking then sends a "booking confirmed" email to the customer. With no key, or with an
+   unverified sender, the application still runs: the send is skipped (missing key) or rejected by
+   the API and a warning is logged instead of a false success.
+6. **Configure the same variables on Render or Railway.** Add `RESEND_API_KEY` (mark it secret) and
+   `MAIL_FROM` in the service's environment variable settings, plus any of `CONTACT_EMAIL`,
+   `OTP_SECRET`, `MONGODB_URI` and the `ADMIN_*` bootstrap variables you use. The platform stores
+   them outside the repository.
+7. **Verify a sending domain for production.** In Resend, *Domains → Add Domain*, add the DNS
+   records it shows (SPF, DKIM and usually a DMARC record for the return path), then wait until the
+   domain reads as verified. Only then point `MAIL_FROM` at that domain.
+8. **Know the limits.** The `onboarding@resend.dev` sender is for permitted testing only. Accounts
+   start on a daily sending quota (see *Settings → Usage* in Resend). When the quota or an
+   unverified sender is hit, the API returns an error that the application logs as
+   `Resend rejected email ...`.
+
+A successful `POST /emails` is an *acceptance* for delivery and returns a message id; it is not
+proof the message reached an inbox. The application logs that acceptance together with the message
+id, and logs rejections and network failures separately. The API key is never logged.
 
 ---
 
@@ -340,7 +375,7 @@ additionally required to carry the matching role.
 ## Tests
 
 ```bash
-mvn test        # 49 tests
+mvn test        # 65 tests
 ```
 
 | Suite | Covers |
@@ -354,10 +389,17 @@ mvn test        # 49 tests
 | `BookingLockServiceTest` | concurrent booking protection |
 | `ModelCircuitBreakerTest` | the assistant stops retrying an absent model, and recovers when it returns |
 | `ReviewServiceTest` | averages and display names |
+| `MailPropertiesTest` | the `app.mail.*` block binds provider, API key and sender |
+| `ResendEmailSenderTest` | Resend SDK call construction, the accepted message id, API rejections, network failures, and the safe skip when configuration is missing |
+| `EmailSenderTest` | the plain-text convenience delegates to a text message |
+| `OtpServiceTest` | issuing a code still emails the normalized recipient and stores only its hash; cooldown and hourly cap send nothing |
+| `DomainEventNotificationListenerTest` | an accepted booking emails the customer server-side; cancellation does not |
 | `MarketplaceApplicationTests` | the context loads |
 
 Web-layer tests are `@WebMvcTest` slices. They import the application's own `SecurityConfig` rather
 than switching filters off, so route access is tested without repeating the route list.
+
+The email tests mock the Resend SDK, so `mvn test` makes no network request and needs no API key.
 
 ---
 
@@ -379,18 +421,24 @@ python3 check-chat.py "how much is a math teacher?"     # ask the assistant some
 
 ## Committed credentials
 
-`application.yml` and `docker-compose.yml` contain a real MongoDB Atlas URI and a real Gmail app
-password, so the project runs on a clone with no setup. That is a development convenience and it is
-**not** how this should be deployed.
+`application.yml` and `docker-compose.yml` still contain a real MongoDB Atlas URI, so the project
+runs on a clone with no database setup. That is a development convenience and it is **not** how this
+should be deployed. Outgoing mail no longer ships any credential: it is configured only through the
+environment (`RESEND_API_KEY`, `MAIL_FROM`), and `application.yml` holds empty defaults.
 
 Before running anywhere shared:
 
 1. Rotate the Atlas database password and put the new URI in a secret store or `MONGODB_URI`.
-2. Revoke the Gmail app password and issue a new one, then set `MAIL_PASSWORD`.
-3. Set `OTP_SECRET` to a long random string. The committed value is a placeholder.
-4. Set `ADMIN_PASSWORD` for the bootstrap administrator, or leave both admin variables blank and
+2. **Revoke the Gmail app password that earlier revisions of this repository contained.** It was
+   committed historically and was once appended to `MarketplaceApplication.java` by mistake, so
+   treat it as leaked. It is no longer referenced anywhere, and Gmail SMTP is no longer used.
+3. Create a Resend API key and set `RESEND_API_KEY` (and a verified `MAIL_FROM`) as secrets. Never
+   commit the key.
+4. Set `OTP_SECRET` to a long random string. The committed value is a placeholder.
+5. Set `ADMIN_PASSWORD` for the bootstrap administrator, or leave both admin variables blank and
    create the account another way.
-5. Move both files to `${ENV_VAR}` only, with no default.
+6. Move the remaining committed values to `${ENV_VAR}` only, with no default (MongoDB URI, OTP
+   secret).
 
 MongoDB Atlas enforces its own network allow-list, so restricting the cluster to known addresses
 limits the blast radius of the committed URI in the meantime.

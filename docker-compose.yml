@@ -29,13 +29,12 @@ services:
       # --- MongoDB Atlas ---
       MONGODB_URI: ${MONGODB_URI:-mongodb+srv://mongo:mangomango@apitesting.fdd2m4g.mongodb.net/serviceDB?appName=apiTesting}
 
-      # --- Outgoing mail ---
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-rashedulislam.raze@gmail.com}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-cyjrhvzssouxzbec}
-      MAIL_FROM: ${MAIL_FROM:-rashedulislam.raze@gmail.com}
-      CONTACT_EMAIL: ${CONTACT_EMAIL:-rashedulislam.raze@gmail.com}
+      # --- Outgoing mail (Resend HTTPS API, no SMTP) ---
+      # RESEND_API_KEY is blank by default: supply it through a .env file or the platform's
+      # secret store. MAIL_FROM must be a verified sender in production.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-onboarding@resend.dev}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
 
       # --- Uploads and links ---
       STORAGE_PATH: /app/storage
