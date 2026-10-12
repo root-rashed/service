@@ -1,6 +1,5 @@
 package com.example.marketplace.media.config;
 
-import com.example.marketplace.media.MediaUrls;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -24,7 +23,7 @@ public class MediaConfig implements WebMvcConfigurer {
     private final Path publicRoot;
 
     public MediaConfig(@Value("${app.storage.path:./storage}") String storagePath) {
-        this.publicRoot = Paths.get(storagePath).toAbsolutePath().normalize().resolve("public");
+        this.publicRoot = Paths.get(storagePath).toAbsolutePath().normalize();
     }
 
     @Override
@@ -38,7 +37,7 @@ public class MediaConfig implements WebMvcConfigurer {
         if (!location.endsWith("/")) {
             location = location + "/";
         }
-        registry.addResourceHandler(MediaUrls.PUBLIC_PREFIX + "**")
+        registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(location)
                 .setCacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic());
     }

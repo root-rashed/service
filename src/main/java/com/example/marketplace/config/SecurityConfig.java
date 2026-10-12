@@ -37,7 +37,7 @@ public class SecurityConfig {
             "/reset-password", "/reset-password/**",
             "/verify-otp", "/verify-otp/**",
             "/resend-otp",
-            "/css/**", "/js/**", "/images/**", "/uploads/public/**", "/favicon.ico",
+            "/css/**", "/js/**", "/images/**", "/uploads/public/**", "/uploads/**", "/favicon.ico",
             "/actuator/health", "/actuator/health/**"
     };
 

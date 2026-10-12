@@ -3,7 +3,7 @@ package com.example.marketplace.media;
 /** Turns a stored file key such as "service-images/abc.jpg" into its public URL path. */
 public final class MediaUrls {
 
-    public static final String PUBLIC_PREFIX = "/uploads/public/";
+    public static final String PUBLIC_PREFIX = "/uploads/";
 
     private MediaUrls() {
     }

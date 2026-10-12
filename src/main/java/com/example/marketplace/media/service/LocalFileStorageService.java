@@ -30,7 +30,7 @@ public class LocalFileStorageService implements FileStorageService {
     private final Path publicRoot;
 
     public LocalFileStorageService(@Value("${app.storage.path:./storage}") String storagePath) {
-        this.publicRoot = Paths.get(storagePath).toAbsolutePath().normalize().resolve("public");
+        this.publicRoot = Paths.get(storagePath).toAbsolutePath().normalize();
         try {
             Files.createDirectories(publicRoot);
         } catch (IOException ex) {
