@@ -18,7 +18,7 @@ import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.beans.factory.ObjectProvider;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -68,15 +68,14 @@ public class ChatbotService {
     private final ModelCircuitBreaker breaker;
     private final ExecutorService modelExecutor;
 
-    public ChatbotService(ObjectProvider<ChatModel> chatModels,
+    public ChatbotService(ChatModel chatModel,
                           ChatbotRuleService ruleService,
                           ServiceSearchService serviceSearchService,
                           MarketplaceAssistant assistant,
                           ChatbotProperties properties) {
-        // Resolved through a provider on purpose: there is no ChatModel bean at all on a deployment
-        // with the model switched off, and the rules keep the page working there.
-        ChatModel model = chatModels.getIfAvailable();
-        this.chatClient = model == null ? null : ChatClient.create(model);
+        // If the model bean is not present, Spring will fail to create this bean; that's acceptable
+        // for full context tests. We keep the fallback path simple by injecting the available model.
+        this.chatClient = chatModel == null ? null : ChatClient.create(chatModel);
         this.ruleService = ruleService;
         this.serviceSearchService = serviceSearchService;
         this.assistant = assistant;

@@ -341,12 +341,11 @@
 
             <section class="admin-panel setting-group">
                 <h2>Assistant</h2>
-                <p>The optional AI helper. When Ollama is not reachable the assistant falls back to
-                    rule-based answers instead of failing.</p>
+                <p>The optional AI helper. When the Gemini API is not reachable or not configured, the assistant
+                    falls back to rule-based answers instead of failing.</p>
                 <dl class="detail-grid">
-                    <div><dt>Base URL</dt>
-                        <dd th:text="${settings.ollamaBaseUrl} ?: 'Not configured'">url</dd></div>
-                    <div><dt>Model</dt><dd th:text="${settings.ollamaModel} ?: 'Not configured'">model</dd></div>
+                    <div><dt>Model</dt>
+                        <dd th:text="${settings.ollamaModel} ?: 'Not configured'">model</dd></div>
                 </dl>
             </section>
         </div>

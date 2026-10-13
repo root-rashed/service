@@ -1,35 +1,33 @@
 package com.example.marketplace.config;
 
 import com.example.marketplace.notification.email.MailProperties;
-import com.resend.Resend;
-import com.resend.services.emails.Emails;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-/**
- * Builds the Resend SDK client from {@code app.mail.*} configuration.
- *
- * Constructing the client performs no network call, so the application still starts for local
- * development without a key; in that case every send is skipped with a logged warning. The API
- * key itself is never logged.
- */
 @Slf4j
 @Configuration
 public class MailConfig {
 
     @Bean
-    public Emails resendEmails(MailProperties properties) {
-        if (!"resend".equals(properties.getProvider())) {
-            log.warn("app.mail.provider '{}' is not supported; only 'resend' is implemented.",
-                    properties.getProvider());
-        }
-        if (StringUtils.hasText(properties.getApiKey())) {
-            log.info("Outgoing email is configured through Resend (from={}).", properties.getFrom());
+    public HttpClient mailHttpClient() {
+        return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    }
+
+    @Bean
+    public brevo.ApiClient brevoApiClient(MailProperties properties) {
+        brevo.ApiClient apiClient = brevo.Configuration.getDefaultApiClient();
+        String key = properties.getApiKey();
+        if (StringUtils.hasText(key)) {
+            apiClient.setApiKey(key);
+            apiClient.addDefaultHeader("api-key", key);
+            log.info("Outgoing email is configured through Brevo (from={}).", properties.getFrom());
         } else {
-            log.warn("app.mail.api-key (RESEND_API_KEY) is not configured: outgoing email is disabled.");
+            log.warn("app.mail.api-key (BREVO_API_KEY) is not configured: outgoing email is disabled.");
         }
-        return new Resend(properties.getApiKey()).emails();
+        return apiClient;
     }
 }

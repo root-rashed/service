@@ -6,9 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Bound from the {@code app.mail.*} properties in application.yml, replacing the old
- * {@code spring.mail.*} SMTP settings. The API key comes from {@code RESEND_API_KEY} (via
- * {@code app.mail.api-key}) and is never committed or logged.
+ * Bound from the {@code app.mail.*} properties in application.yml. The API key comes from
+ * {@code BREVO_API_KEY} (via {@code app.mail.api-key}) and is never committed or logged.
  */
 @Component
 @ConfigurationProperties(prefix = "app.mail")
@@ -16,12 +15,8 @@ import org.springframework.stereotype.Component;
 @Setter
 public class MailProperties {
 
-    /** Email provider. Only "resend" is implemented. */
-    private String provider = "resend";
-
-    /** Resend API key. Read from RESEND_API_KEY; never commit it to source control. */
+    private String provider = "brevo";
     private String apiKey = "";
-
-    /** Verified sender address, e.g. "ServiZone <no-reply@servizone.com>". */
     private String from = "";
+    private String fromName = "ServiZone";
 }

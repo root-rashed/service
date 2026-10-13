@@ -31,7 +31,6 @@ public class AdminSettingsDto {
     int otpMaxPerHour;
 
     String activeProfile;
-    String ollamaBaseUrl;
     String ollamaModel;
 
     /** Always "CASH": this build has no online payment provider at all. */

@@ -42,8 +42,7 @@ public class AdminSettingsService {
                 number("app.otp.resend-cooldown-seconds"),
                 number("app.otp.max-per-hour"),
                 activeProfile,
-                property("spring.ai.ollama.base-url", ""),
-                property("spring.ai.ollama.chat.options.model", ""),
+                property("spring.ai.google.genai.chat.model", property("spring.ai.google.genai.chat.options.model", "gemini-2.5-flash")),
                 PaymentMethod.CASH.name());
     }
 

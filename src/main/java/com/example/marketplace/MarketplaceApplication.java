@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.ai.model.ollama.autoconfigure.OllamaChatAutoConfiguration.class
+})
 @EnableCaching
 public class MarketplaceApplication
 {

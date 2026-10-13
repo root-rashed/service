@@ -21,14 +21,14 @@ class MailPropertiesTest {
     @Test
     void bindsProviderApiKeyAndFrom() {
         runner.withPropertyValues(
-                        "app.mail.provider=resend",
-                        "app.mail.api-key=re_test_123",
-                        "app.mail.from=ServiZone <onboarding@resend.dev>")
+                        "app.mail.provider=brevo",
+                        "app.mail.api-key=test_123",
+                        "app.mail.from=ServiZone <test@example.com>")
                 .run(context -> {
                     MailProperties properties = context.getBean(MailProperties.class);
-                    assertThat(properties.getProvider()).isEqualTo("resend");
-                    assertThat(properties.getApiKey()).isEqualTo("re_test_123");
-                    assertThat(properties.getFrom()).isEqualTo("ServiZone <onboarding@resend.dev>");
+                    assertThat(properties.getProvider()).isEqualTo("brevo");
+                    assertThat(properties.getApiKey()).isEqualTo("test_123");
+                    assertThat(properties.getFrom()).isEqualTo("ServiZone <test@example.com>");
                 });
     }
 
@@ -36,7 +36,7 @@ class MailPropertiesTest {
     void missingValuesLeaveSafeDefaults() {
         runner.run(context -> {
             MailProperties properties = context.getBean(MailProperties.class);
-            assertThat(properties.getProvider()).isEqualTo("resend");
+            assertThat(properties.getProvider()).isEqualTo("brevo");
             assertThat(properties.getApiKey()).isEmpty();
             assertThat(properties.getFrom()).isEmpty();
         });

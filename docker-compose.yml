@@ -29,11 +29,11 @@ services:
       # --- MongoDB Atlas ---
       MONGODB_URI: ${MONGODB_URI:-mongodb+srv://mongo:mangomango@apitesting.fdd2m4g.mongodb.net/serviceDB?appName=apiTesting}
 
-      # --- Outgoing mail (Resend HTTPS API, no SMTP) ---
-      # RESEND_API_KEY is blank by default: supply it through a .env file or the platform's
-      # secret store. MAIL_FROM must be a verified sender in production.
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      MAIL_FROM: ${MAIL_FROM:-onboarding@resend.dev}
+      # --- Outgoing mail (Brevo HTTPS API, no SMTP) ---
+      # BREVO_API_KEY is blank by default: supply it through a .env file or the platform's
+      # secret store. MAIL_FROM must be a verified sender in Brevo.
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
 
       # --- Uploads and links ---
